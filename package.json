@@ -1,0 +1,15 @@
+{
+  "name": "daily-expense-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mobile-first PWA to track daily expenses against a monthly budget, with a recommended daily spending limit. Works offline, data stays on the device.",
+  "scripts": {
+    "start": "node tools/serve.js",
+    "deploy": "node tools/build-deploy.js",
+    "icons": "node tools/gen-icons.js",
+    "standalone": "node tools/build-standalone.js",
+    "check": "node tools/check.js"
+  },
+  "keywords": ["expense-tracker", "budget", "pwa", "offline"],
+  "license": "MIT"
+}

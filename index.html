@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Expense Tracker</title>
+<meta name="description" content="Daily expense tracker with a monthly budget, a recommended daily spending limit and offline storage on your phone.">
+<meta name="theme-color" content="#e9f0fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11161f" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Expenses">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png?v=2" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png?v=2">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="app-bar">
+  <img class="brand-logo" src="icons/icon-64.png?v=2" alt="" width="40" height="40" decoding="async">
+  <div class="app-bar-main">
+    <h1 class="app-title" data-i18n="app.name">Expense Tracker</h1>
+    <p class="app-sub" id="cycleLabel">&nbsp;</p>
+  </div>
+
+  <button type="button" id="currencyTopBtn" class="chip-btn" data-i18n-aria="a11y.currency">
+    <span id="currencyTopFlag" aria-hidden="true">&nbsp;</span>
+    <span id="currencyTopText">&nbsp;</span>
+    <span class="chip-caret" aria-hidden="true">&#9662;</span>
+  </button>
+
+  <button type="button" id="langBtn" class="icon-btn icon-btn-text" data-i18n-aria="a11y.lang">
+    <span id="langIcon" aria-hidden="true">EN</span>
+  </button>
+
+  <button type="button" id="themeBtn" class="icon-btn" data-i18n-aria="a11y.theme" data-i18n-title="a11y.theme">
+    <span id="themeIcon" aria-hidden="true">&#9681;</span>
+  </button>
+</header>
+
+<main id="main">
+
+  <!-- ───────────────────────── HOME ───────────────────────── -->
+  <section id="view-home" class="view" aria-labelledby="homeHeading">
+    <h2 id="homeHeading" class="sr-only" data-i18n="home.heading">Dashboard</h2>
+
+    <div id="alerts" class="alerts" aria-live="polite"></div>
+
+    <section class="card hero-card" id="heroCard">
+      <span class="hero-art" data-art="wave" aria-hidden="true"></span>
+
+      <div class="hero-ring">
+        <svg class="ring" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
+          <circle class="ring-track" cx="80" cy="80" r="68"></circle>
+          <circle class="ring-fill" id="dayRing" cx="80" cy="80" r="68"></circle>
+        </svg>
+        <div class="hero-ring-mid">
+          <p class="label" data-i18n="home.spentToday">Spent today</p>
+          <p id="todaySpend" class="hero">&mdash;</p>
+          <p id="todayMeta" class="meta">&nbsp;</p>
+        </div>
+      </div>
+
+      <div class="hero-legend" id="dayMeterWrap">
+        <span id="dayMeterLeft">&nbsp;</span>
+        <span id="dayMeterRight" class="muted">&nbsp;</span>
+      </div>
+    </section>
+
+    <div class="tiles">
+      <div class="tile is-tappable" data-hue="blue" id="tileLimitCard" role="button" tabindex="0" aria-expanded="false">
+        <span class="tile-icon" data-icon="shield" aria-hidden="true"></span>
+        <div class="tile-body">
+          <p class="label" data-i18n="tile.limit">Safe to spend / day</p>
+          <p class="tile-value" id="tileLimit">&mdash;</p>
+          <p class="tile-note" id="tileLimitNote">&nbsp;</p>
+        </div>
+      </div>
+      <div class="tile" data-hue="violet">
+        <span class="tile-icon" data-icon="clock" aria-hidden="true"></span>
+        <div class="tile-body">
+          <p class="label" data-i18n="tile.leftToday">Left today</p>
+          <p class="tile-value" id="tileLeftToday">&mdash;</p>
+          <p class="tile-note" id="tileLeftNote">&nbsp;</p>
+        </div>
+      </div>
+      <div class="tile" data-hue="orange">
+        <span class="tile-icon" data-icon="pie" aria-hidden="true"></span>
+        <div class="tile-body">
+          <p class="label" data-i18n="tile.month">Spent this month</p>
+          <p class="tile-value" id="tileMonth">&mdash;</p>
+          <p class="tile-note" id="tileMonthNote">&nbsp;</p>
+        </div>
+      </div>
+      <div class="tile" data-hue="aqua">
+        <span class="tile-icon" data-icon="wallet" aria-hidden="true"></span>
+        <div class="tile-body">
+          <p class="label" data-i18n="tile.remaining">Budget left</p>
+          <p class="tile-value" id="tileRemaining">&mdash;</p>
+          <p class="tile-note" id="tileRemainingNote">&nbsp;</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- two columns that stack on their own, so a short card never
+         leaves a hole under it; on a phone they collapse away -->
+    <div class="home-col home-col-a">
+      <section class="card">
+        <div class="card-head">
+          <span class="card-icon" data-icon="target" data-hue="violet" aria-hidden="true"></span>
+          <h3 class="card-title" data-i18n="budget.title">Monthly budget</h3>
+          <button type="button" class="link-btn" data-goto="settings" data-i18n="common.edit">Edit</button>
+        </div>
+        <div class="meter">
+          <div class="meter-track" id="budgetTrack"><div class="meter-fill" id="budgetMeter"></div></div>
+          <div class="meter-legend">
+            <span id="budgetMeterLeft">&nbsp;</span>
+            <span id="budgetMeterRight" class="muted">&nbsp;</span>
+          </div>
+        </div>
+        <dl class="kv" id="budgetFacts"></dl>
+        <div class="budget-empty" id="budgetEmpty" hidden></div>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <span class="card-icon" data-icon="pie" data-hue="aqua" aria-hidden="true"></span>
+          <h3 class="card-title" data-i18n="cats.title">Where the money went</h3>
+          <span class="card-tag" id="catTag">&nbsp;</span>
+        </div>
+        <div id="catBars"></div>
+        <details class="table-view" id="catTableWrap">
+          <summary data-i18n="table.show">Show as table</summary>
+          <div class="table-scroll" id="catTable"></div>
+        </details>
+      </section>
+    </div>
+
+    <div class="home-col home-col-b">
+      <section class="card">
+        <div class="card-head">
+          <span class="card-icon" data-icon="bars" data-hue="blue" aria-hidden="true"></span>
+          <h3 class="card-title" data-i18n="chart.title">Daily spending</h3>
+          <div class="seg" role="group" data-i18n-aria="a11y.chartRange">
+            <button type="button" class="seg-btn is-on" data-range="7" data-i18n="chart.range7">7 days</button>
+            <button type="button" class="seg-btn" data-range="30" data-i18n="chart.range30">30 days</button>
+          </div>
+        </div>
+        <p class="card-sub" id="chartSub">&nbsp;</p>
+        <div class="chart" id="chartDaily"></div>
+        <details class="table-view">
+          <summary data-i18n="table.show">Show as table</summary>
+          <div class="table-scroll" id="chartTable"></div>
+        </details>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <span class="card-icon" data-icon="receipt" data-hue="orange" aria-hidden="true"></span>
+          <h3 class="card-title" data-i18n="recent.title">Recent expenses</h3>
+          <button type="button" class="link-btn" data-goto="history" data-i18n="recent.seeAll">See all</button>
+        </div>
+        <div id="recentList"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── HISTORY ───────────────────────── -->
+  <section id="view-history" class="view" aria-labelledby="histHeading" hidden>
+    <h2 id="histHeading" class="sr-only" data-i18n="hist.heading">History</h2>
+
+    <section class="card">
+      <div class="cycle-nav">
+        <button type="button" class="icon-btn" id="cycPrev" data-i18n-aria="a11y.prevMonth">&#8249;</button>
+        <div class="cycle-now">
+          <p class="cycle-name" id="cycLabel">&nbsp;</p>
+          <p class="meta" id="cycRange">&nbsp;</p>
+        </div>
+        <button type="button" class="icon-btn" id="cycNext" data-i18n-aria="a11y.nextMonth">&#8250;</button>
+      </div>
+      <dl class="kv" id="histFacts"></dl>
+    </section>
+
+    <section class="card">
+      <div class="filters">
+        <label class="field">
+          <span class="label" data-i18n="hist.search">Search</span>
+          <input type="search" id="histSearch" data-i18n-ph="hist.searchPh" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="label" data-i18n="table.category">Category</span>
+          <select id="histCat"></select>
+        </label>
+      </div>
+    </section>
+
+    <div id="historyList"></div>
+  </section>
+
+  <!-- ───────────────────────── SETTINGS ───────────────────────── -->
+  <section id="view-settings" class="view" aria-labelledby="setHeading" hidden>
+    <h2 id="setHeading" class="sr-only" data-i18n="set.heading">Settings</h2>
+
+    <section class="card">
+      <h3 class="card-title" data-i18n="set.money">Money</h3>
+      <div class="field">
+        <span class="label" data-i18n="set.countryCurrency">Country &amp; currency</span>
+        <button type="button" class="picker-btn" id="currencyBtn">
+          <span id="currencyBtnText">&nbsp;</span>
+          <span aria-hidden="true">&#9662;</span>
+        </button>
+        <p class="hint" data-i18n="set.currencyHint">Every country is listed.</p>
+      </div>
+
+      <label class="field">
+        <span class="label" data-i18n="set.budget">Monthly budget</span>
+        <div class="input-money">
+          <span class="input-prefix" id="budgetPrefix">&nbsp;</span>
+          <input type="number" id="budgetInput" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+        <p class="hint" data-i18n="set.budgetHint">Your daily limit is worked out from this.</p>
+      </label>
+
+      <label class="field">
+        <span class="label" data-i18n="set.cycleStart">Budget month starts on day</span>
+        <select id="cycleStart"></select>
+        <p class="hint" data-i18n="set.cycleHint">Set your salary date to track a salary-to-salary cycle.</p>
+      </label>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title" data-i18n="set.limitTitle">Daily limit</h3>
+      <div class="field" role="radiogroup" data-i18n-aria="a11y.limitMode">
+        <label class="radio">
+          <input type="radio" name="limitMode" value="adaptive" checked>
+          <span>
+            <strong data-i18n="set.adaptive">Adaptive (recommended)</strong>
+            <small data-i18n="set.adaptiveDesc">Budget left divided by days left.</small>
+          </span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="limitMode" value="flat">
+          <span>
+            <strong data-i18n="set.flat">Flat</strong>
+            <small data-i18n="set.flatDesc">Budget divided by days in the month.</small>
+          </span>
+        </label>
+      </div>
+      <label class="field">
+        <span class="label" id="nearPctLabel">&nbsp;</span>
+        <input type="range" id="nearPct" min="50" max="99" step="5">
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="alertsOn" checked>
+        <span data-i18n="set.alertsOn">Show spending alerts</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title" data-i18n="set.categories">Categories</h3>
+      <div id="catManage" class="chip-wrap"></div>
+      <form class="row-form" id="catForm">
+        <input type="text" id="catName" data-i18n-ph="set.newCategory" maxlength="30" autocomplete="off" data-i18n-aria="a11y.catName">
+        <input type="text" id="catIcon" placeholder="&#127775;" maxlength="4" data-i18n-aria="a11y.catIcon" class="icon-input">
+        <button type="submit" class="btn btn-quiet" data-i18n="set.add">Add</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title" data-i18n="set.appearance">Appearance</h3>
+      <label class="field">
+        <span class="label" data-i18n="set.language">Language</span>
+        <select id="langSelect"></select>
+      </label>
+      <label class="field">
+        <span class="label" data-i18n="set.theme">Theme</span>
+        <select id="themeSelect">
+          <option value="auto" data-i18n="theme.auto">Match my phone</option>
+          <option value="light" data-i18n="theme.light">Light</option>
+          <option value="dark" data-i18n="theme.dark">Dark</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="card">
+      <h3 class="card-title" data-i18n="set.data">Your data</h3>
+      <p class="hint with-badge">
+        <span class="badge-art" data-art="shield" aria-hidden="true"></span>
+        <span data-i18n="set.dataHint">Everything is stored on this device only.</span>
+      </p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-quiet" id="exportJson" data-i18n="set.backup">Backup (JSON)</button>
+        <button type="button" class="btn btn-quiet" id="exportCsv" data-i18n="set.exportCsv">Export CSV</button>
+        <button type="button" class="btn btn-quiet" id="importBtn" data-i18n="set.restore">Restore backup</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-danger" id="clearData" data-i18n="set.deleteAll">Delete all expenses</button>
+      </div>
+      <p class="hint" id="storageNote"></p>
+    </section>
+
+    <p class="footer-note" data-i18n="set.footer">Expense Tracker</p>
+  </section>
+
+</main>
+
+<button type="button" class="fab" id="fab" data-i18n-aria="a11y.addExpense">
+  <span aria-hidden="true">+</span>
+</button>
+
+<nav class="tabbar" aria-label="Main">
+  <button type="button" class="tab is-on" data-tab="home">
+    <span class="tab-icon" aria-hidden="true">&#9680;</span><span data-i18n="nav.home">Home</span>
+  </button>
+  <button type="button" class="tab" data-tab="history">
+    <span class="tab-icon" aria-hidden="true">&#9636;</span><span data-i18n="nav.history">History</span>
+  </button>
+  <button type="button" class="tab" data-tab="settings">
+    <span class="tab-icon" aria-hidden="true">&#9881;</span><span data-i18n="nav.settings">Settings</span>
+  </button>
+</nav>
+
+<!-- ───────────────────────── ADD / EDIT SHEET ───────────────────────── -->
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="expenseSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <h2 class="sheet-title" id="sheetTitle" data-i18n="sheet.add">Add expense</h2>
+    <button type="button" class="icon-btn" data-close-sheet data-i18n-aria="a11y.close">&times;</button>
+  </div>
+  <form id="expenseForm" class="sheet-body">
+    <label class="field">
+      <span class="label" data-i18n="sheet.amount">Amount</span>
+      <div class="input-money big">
+        <span class="input-prefix" id="amountPrefix">&nbsp;</span>
+        <input type="number" id="amountInput" inputmode="decimal" min="0" step="any" placeholder="0" required>
+      </div>
+    </label>
+    <div class="quick-row" id="quickAmounts"></div>
+
+    <div class="field">
+      <span class="label" data-i18n="sheet.category">Category</span>
+      <div class="chip-wrap" id="catChips" role="radiogroup" data-i18n-aria="sheet.category"></div>
+    </div>
+
+    <label class="field">
+      <span class="label">
+        <span data-i18n="sheet.note">Note</span>
+        <span class="muted" data-i18n="sheet.optional">(optional)</span>
+      </span>
+      <input type="text" id="noteInput" maxlength="140" data-i18n-ph="sheet.notePh" autocomplete="off">
+    </label>
+
+    <label class="field">
+      <span class="label" data-i18n="sheet.date">Date</span>
+      <input type="date" id="dateInput" required>
+    </label>
+
+    <p class="sheet-hint" id="sheetHint"></p>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-quiet" data-close-sheet data-i18n="sheet.cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="saveBtn" data-i18n="sheet.save">Save expense</button>
+    </div>
+  </form>
+</section>
+
+<!-- ───────────────────────── COUNTRY PICKER ───────────────────────── -->
+<section class="sheet sheet-tall" id="pickerSheet" role="dialog" aria-modal="true" aria-labelledby="pickerTitle" hidden>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <h2 class="sheet-title" id="pickerTitle" data-i18n="picker.title">Country &amp; currency</h2>
+    <button type="button" class="icon-btn" data-close-sheet data-i18n-aria="a11y.close">&times;</button>
+  </div>
+  <div class="sheet-body">
+    <label class="field">
+      <span class="sr-only" data-i18n="a11y.searchCountry">Search country or currency</span>
+      <input type="search" id="pickerSearch" data-i18n-ph="picker.searchPh" autocomplete="off">
+    </label>
+    <button type="button" class="detect-btn" id="detectBtn">
+      <span class="detect-icon" aria-hidden="true">&#9678;</span>
+      <span>
+        <span class="detect-title" data-i18n="picker.auto">Detect automatically</span>
+        <span class="detect-sub" data-i18n="picker.autoSub">From your device time zone</span>
+      </span>
+    </button>
+    <ul class="pick-list" id="pickerList" role="listbox" data-i18n-aria="picker.title"></ul>
+  </div>
+</section>
+
+<!-- ───────────────────────── WELCOME ───────────────────────── -->
+<section class="sheet" id="welcomeSheet" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" hidden>
+  <div class="sheet-head">
+    <h2 class="sheet-title" id="welcomeTitle" data-i18n="welcome.title">Set up in 10 seconds</h2>
+    <div class="lang-toggle" id="welcomeLangs" role="group" data-i18n-aria="a11y.lang"></div>
+  </div>
+  <form class="sheet-body" id="welcomeForm">
+    <p class="sheet-hint" data-i18n="welcome.sub">Pick your currency and set a monthly budget.</p>
+    <div class="field">
+      <span class="label" data-i18n="set.countryCurrency">Country &amp; currency</span>
+      <button type="button" class="picker-btn" id="welcomeCurrencyBtn">
+        <span id="welcomeCurrencyText">&nbsp;</span>
+        <span aria-hidden="true">&#9662;</span>
+      </button>
+    </div>
+    <label class="field">
+      <span class="label" data-i18n="set.budget">Monthly budget</span>
+      <div class="input-money big">
+        <span class="input-prefix" id="welcomePrefix">&nbsp;</span>
+        <input type="number" id="welcomeBudget" inputmode="decimal" min="0" step="any" placeholder="0">
+      </div>
+      <p class="hint" data-i18n="welcome.budgetHint">Not sure? Put your usual monthly spend.</p>
+    </label>
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-quiet" id="welcomeSkip" data-i18n="welcome.skip">Skip</button>
+      <button type="submit" class="btn btn-primary" data-i18n="welcome.start">Start tracking</button>
+    </div>
+  </form>
+</section>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/currencies.js"></script>
+<script src="js/store.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<!-- Play Store feature graphic. Render at exactly 1024x500 and save as
+     store/feature-graphic-1024x500.png (see PLAYSTORE.md). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Feature graphic</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1024px; height: 500px; overflow: hidden; }
+  body {
+    display: flex; align-items: center; gap: 56px;
+    padding: 0 72px;
+    background: linear-gradient(135deg, #3987e5 0%, #2a78d6 42%, #1c5cab 100%);
+    color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .copy { flex: 1; min-width: 0; }
+  .mark { display: block; margin-bottom: 14px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  h1 { font-size: 54px; font-weight: 680; letter-spacing: -0.025em; line-height: 1.04; }
+  p { font-size: 25px; margin-top: 18px; opacity: 0.92; line-height: 1.35; }
+  .tags { display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap; }
+  .tag {
+    font-size: 17px; padding: 9px 16px; border-radius: 999px;
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.28);
+  }
+  /* a small phone mock-up on the right */
+  .phone {
+    width: 236px; height: 420px; flex: 0 0 236px;
+    background: #16161a; border-radius: 34px; padding: 13px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    border: 2px solid rgba(255,255,255,0.22);
+  }
+  .screen { width: 100%; height: 100%; background: #fcfcfb; border-radius: 23px; padding: 16px; color: #0b0b0b; }
+  .lbl { font-size: 11px; color: #52514e; }
+  .big { font-size: 38px; font-weight: 680; letter-spacing: -0.03em; margin-top: 2px; }
+  .sub { font-size: 10px; color: #898781; margin-top: 2px; }
+  .track { height: 7px; border-radius: 999px; background: #cde2fb; margin-top: 12px; overflow: hidden; }
+  .fill { height: 100%; width: 46%; background: #2a78d6; border-radius: 999px; }
+  .cols { display: flex; align-items: flex-end; gap: 7px; height: 92px; margin-top: 20px; }
+  .col { flex: 1; background: #2a78d6; border-radius: 4px 4px 0 0; }
+  .tiles { display: flex; gap: 8px; margin-top: 16px; }
+  .tile { flex: 1; border: 1px solid rgba(11,11,11,0.10); border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 14px; margin-top: 2px; }
+  .tile span { font-size: 8.5px; color: #52514e; }
+</style>
+</head>
+<body>
+  <div class="copy">
+    <img class="mark" src="../images/logo.png" width="124" height="124" alt="">
+    <h1>Expense Tracker</h1>
+    <p>Know exactly how much you can spend today &mdash;<br>in your own currency.</p>
+    <div class="tags">
+      <span class="tag">Daily spending limit</span>
+      <span class="tag">Works offline</span>
+      <span class="tag">No account needed</span>
+    </div>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="lbl">Spent today</div>
+      <div class="big">&#8377;310</div>
+      <div class="sub">2 expenses today</div>
+      <div class="track"><div class="fill"></div></div>
+      <div class="cols">
+        <div class="col" style="height:58%"></div>
+        <div class="col" style="height:46%"></div>
+        <div class="col" style="height:28%"></div>
+        <div class="col" style="height:100%"></div>
+        <div class="col" style="height:76%"></div>
+        <div class="col" style="height:79%"></div>
+        <div class="col" style="height:16%"></div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span>Safe per day</span><b>&#8377;620</b></div>
+        <div class="tile"><span>Budget left</span><b>&#8377;10,233</b></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

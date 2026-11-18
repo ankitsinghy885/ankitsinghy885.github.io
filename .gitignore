@@ -1,0 +1,11 @@
+# Build output - regenerate with: node tools/build-deploy.js
+dist/
+dist.zip
+
+# Local dev screenshots - regenerate with: node tools/shot.js
+tools/shots/
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
