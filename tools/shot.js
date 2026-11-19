@@ -152,7 +152,7 @@ function run() {
   var view = process.argv[3] || 'home';     // home | history | settings
   var names = only ? [only] : Object.keys(SIZES);
   names.forEach(function (n) { if (!SIZES[n]) { console.error('unknown size: ' + n); process.exit(1); } });
-  if (['home', 'history', 'settings'].indexOf(view) < 0) {
+  if (['home', 'history', 'settings', 'welcome'].indexOf(view) < 0) {
     console.error('unknown view: ' + view); process.exit(1);
   }
 
@@ -209,8 +209,12 @@ function run() {
         return cdp.send('Page.navigate', { url: BASE });
       }).then(function () { return wait(900); })
         .then(function () {
-          // seed, drop any service worker cache, then reload into the real app
-          return cdp.send('Runtime.evaluate', { expression: SEED, awaitPromise: false });
+          // seed, drop any service worker cache, then reload into the real app.
+          // 'welcome' wants a first-ever launch, so it clears instead of seeding.
+          return cdp.send('Runtime.evaluate', {
+            expression: view === 'welcome' ? 'localStorage.clear();' : SEED,
+            awaitPromise: false
+          });
         })
         .then(function () {
           return cdp.send('Runtime.evaluate', {
@@ -221,7 +225,7 @@ function run() {
         .then(function () { return cdp.send('Page.navigate', { url: BASE }); })
         .then(function () { return wait(1400); })
         .then(function () {
-          if (view === 'home') return null;
+          if (view === 'home' || view === 'welcome') return null;
           return cdp.send('Runtime.evaluate', {
             expression: "document.querySelector('.tab[data-tab=\"" + view + "\"]').click(); scrollTo(0,0);"
           }).then(function () { return wait(600); });

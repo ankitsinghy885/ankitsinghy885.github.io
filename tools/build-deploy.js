@@ -25,6 +25,7 @@ const FILES = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',
+  'img/welcome-banner.jpg',
   '.well-known/assetlinks.json',
   // referenced by the manifest, so PWABuilder and the install prompt can read them
   'store/screenshots/01-dashboard.png',

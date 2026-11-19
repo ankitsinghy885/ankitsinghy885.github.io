@@ -1,5 +1,5 @@
 /* sw.js - offline app shell. Bump CACHE when any shell file changes. */
-var CACHE = 'expense-tracker-v16';
+var CACHE = 'expense-tracker-v17';
 var SHELL = [
   './',
   'index.html',
@@ -14,7 +14,8 @@ var SHELL = [
   'manifest.webmanifest',
   'icons/icon-64.png',
   'icons/icon-192.png',
-  'icons/icon-512.png'
+  'icons/icon-512.png',
+  'img/welcome-banner.jpg'
 ];
 
 self.addEventListener('install', function (event) {

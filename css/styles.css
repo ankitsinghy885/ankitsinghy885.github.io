@@ -674,6 +674,17 @@ input[type="range"] { width: 100%; accent-color: var(--series); }
   padding: 12px var(--gutter) 6px;
 }
 .sheet-title { font-size: 1.0625rem; font-weight: 650; }
+
+/* First-run banner. It sits above the sheet head and keeps its own size, so
+   a short screen scrolls the form underneath it rather than squashing it. */
+.welcome-banner {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: auto;
+  border-radius: 22px 22px 0 0;
+  background: var(--track);
+}
 .sheet-body {
   padding: 8px var(--gutter) calc(env(safe-area-inset-bottom) + 18px);
   overflow-y: auto; display: grid; gap: 14px; align-content: start;

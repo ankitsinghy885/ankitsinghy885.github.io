@@ -37,8 +37,14 @@ html = html
   .replace(/<link rel="icon"[^>]*>/, () => '<link rel="icon" href="data:image/png;base64,' + icon + '">')
   .replace(/<link rel="apple-touch-icon"[^>]*>/, () => '<link rel="apple-touch-icon" href="data:image/png;base64,' + icon + '">');
 
+// the first-run banner is a real file on the site; a single-file build has to
+// carry it inline or the welcome screen shows a broken image
+const banner = fs.readFileSync(path.join(root, 'img', 'welcome-banner.jpg')).toString('base64');
+html = html.replace(/src="img\/welcome-banner\.jpg"/,
+  () => 'src="data:image/jpeg;base64,' + banner + '"');
+
 // the bundle must not still point at files that are not shipped with it
-['<script src=', '<link rel="stylesheet"'].forEach((frag) => {
+['<script src=', '<link rel="stylesheet"', 'src="img/'].forEach((frag) => {
   if (html.includes(frag)) throw new Error('standalone build still references ' + frag);
 });
 if (!html.includes('$$(')) throw new Error('the $$ helper was mangled during inlining');
