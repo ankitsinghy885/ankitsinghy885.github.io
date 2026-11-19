@@ -1445,7 +1445,7 @@ body.is-locked { overflow: hidden; }
       'set.budget': 'Monthly budget',
       'set.budgetHint': 'Your daily limit is worked out from this.',
       'set.cycleStart': 'Budget month starts on day',
-      'set.cycleHint': 'Set your salary date to track a salary-to-salary cycle.',
+      'set.cycleHint': 'Set your salary date to track a salary-to-salary cycle. In a month that is too short for the day you pick, the cycle starts on that month’s last day.',
       'set.calendarMonth': '{day} (calendar month)',
       'set.limitTitle': 'Daily limit',
       'set.adaptive': 'Adaptive (recommended)',
@@ -1669,7 +1669,7 @@ body.is-locked { overflow: hidden; }
       'set.budget': 'महीने का बजट',
       'set.budgetHint': 'रोज़ की लिमिट इसी से निकलती है।',
       'set.cycleStart': 'बजट महीना शुरू होने की तारीख',
-      'set.cycleHint': 'सैलरी की तारीख डालें तो सैलरी-से-सैलरी का हिसाब चलेगा।',
+      'set.cycleHint': 'सैलरी की तारीख डालें तो सैलरी-से-सैलरी का हिसाब चलेगा। जिस महीने में वह तारीख न हो, उस महीने का हिसाब उसके आख़िरी दिन से शुरू होगा।',
       'set.calendarMonth': '{day} (कैलेंडर महीना)',
       'set.limitTitle': 'रोज़ की लिमिट',
       'set.adaptive': 'अडैप्टिव (सुझाया गया)',
@@ -2212,7 +2212,7 @@ body.is-locked { overflow: hidden; }
       expenses: Array.isArray(data.expenses) ? data.expenses : []
     };
     // keep stored currency/country even if the browser locale now says otherwise
-    out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 28, 1);
+    out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 30, 1);
     out.settings.nearBudgetPct = clampInt(out.settings.nearBudgetPct, 50, 99, 80);
     out.settings.monthlyBudget = Math.max(0, Number(out.settings.monthlyBudget) || 0);
     if (global.Currencies) {
@@ -2288,7 +2288,7 @@ body.is-locked { overflow: hidden; }
         state.settings.locale = global.Currencies.localeFor(state.settings.country, state.settings.lang);
       }
     }
-    state.settings.cycleStartDay = clampInt(state.settings.cycleStartDay, 1, 28, 1);
+    state.settings.cycleStartDay = clampInt(state.settings.cycleStartDay, 1, 30, 1);
     state.settings.monthlyBudget = Math.max(0, Number(state.settings.monthlyBudget) || 0);
     commit();
   }
@@ -2465,23 +2465,47 @@ body.is-locked { overflow: hidden; }
 
   // ---- budget cycle -------------------------------------------------------
 
+  /** The highest day of the month a cycle may start on. */
+  var MAX_START_DAY = 30;
+
+  /** How many days a month really has. Day 0 of the next month is the last
+      day of this one, so February answers 28 or 29 on its own. */
+  function daysInMonth(year, monthIndex) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+  }
+
+  /** The chosen start day inside one month, pulled back when that month is
+      too short to have it: 30 lands on 28 February, or 29 in a leap year. */
+  function cycleAnchor(year, monthIndex, startDay) {
+    return new Date(year, monthIndex, Math.min(startDay, daysInMonth(year, monthIndex)));
+  }
+
+  function normalizeStartDay(startDay) {
+    return clamp(parseInt(startDay, 10) || 1, 1, MAX_START_DAY);
+  }
+
   /** First day of the budget cycle that contains `d`. */
   function cycleStart(d, startDay) {
-    startDay = clamp(parseInt(startDay, 10) || 1, 1, 28);
-    if (d.getDate() >= startDay) return new Date(d.getFullYear(), d.getMonth(), startDay);
-    return new Date(d.getFullYear(), d.getMonth() - 1, startDay);
+    startDay = normalizeStartDay(startDay);
+    var here = cycleAnchor(d.getFullYear(), d.getMonth(), startDay);
+    if (d.getDate() >= here.getDate()) return here;
+    return cycleAnchor(d.getFullYear(), d.getMonth() - 1, startDay);
   }
 
   /** Last day of the cycle that contains `d`. */
   function cycleEnd(d, startDay) {
+    startDay = normalizeStartDay(startDay);
     var s = cycleStart(d, startDay);
-    return addDays(new Date(s.getFullYear(), s.getMonth() + 1, s.getDate()), -1);
+    return addDays(cycleAnchor(s.getFullYear(), s.getMonth() + 1, startDay), -1);
   }
 
   /** The cycle `offset` cycles away from the one containing `ref` (0 = current). */
   function cycleAt(ref, startDay, offset) {
+    startDay = normalizeStartDay(startDay);
     var s = cycleStart(ref || today(), startDay);
-    var moved = new Date(s.getFullYear(), s.getMonth() + (offset || 0), s.getDate());
+    // Step whole months from the day the user chose, not from `s` - a cycle
+    // pulled back to 28 February must not carry that 28 into March.
+    var moved = cycleAnchor(s.getFullYear(), s.getMonth() + (offset || 0), startDay);
     return cycleRange(moved, startDay);
   }
 
@@ -3626,7 +3650,7 @@ body.is-locked { overflow: hidden; }
     if (!force && cs.dataset.lang === I18n.current() && cs.options.length) return;
     var keep = cs.value;
     var html = '';
-    for (var d = 1; d <= 28; d++) {
+    for (var d = 1; d <= 30; d++) {
       var label = d === 1 ? t('set.calendarMonth', { day: dayOrdinal(1) }) : dayOrdinal(d);
       html += '<option value="' + d + '">' + esc(label) + '</option>';
     }

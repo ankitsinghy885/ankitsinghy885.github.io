@@ -164,6 +164,72 @@ eq('leap february has 29 days', r.days, 29);
 eq('previous cycle via offset', Calc.cycleAt(nov14, 1, -1).startKey, '2026-10-01');
 eq('two cycles back', Calc.cycleAt(nov14, 1, -2).startKey, '2026-09-01');
 
+// ---- start days a short month cannot hold ----------------------------------
+section('start days 29 and 30');
+
+// February 2027 has 28 days, so a 30th-of-the-month cycle starts on the 28th
+r = Calc.cycleRange(new Date(2027, 1, 28), 30);
+eq('30th falls back to the last day of a short february', r.startKey, '2027-02-28');
+eq('…and still ends the day before the next 30th', r.endKey, '2027-03-29');
+
+r = Calc.cycleRange(new Date(2027, 1, 27), 30);
+eq('the day before that is still the january cycle', r.startKey, '2027-01-30');
+eq('…ending as february begins its own', r.endKey, '2027-02-27');
+
+// February 2028 is a leap year: 29 days, so the fallback is the 29th
+r = Calc.cycleRange(new Date(2028, 1, 29), 30);
+eq('leap february falls back to the 29th', r.startKey, '2028-02-29');
+eq('…and runs into march', r.endKey, '2028-03-29');
+
+r = Calc.cycleRange(new Date(2027, 1, 28), 29);
+eq('29th also falls back in a short february', r.startKey, '2027-02-28');
+
+// a 30-day month holds the 30th exactly
+r = Calc.cycleRange(new Date(2027, 3, 30), 30);
+eq('april holds the 30th', r.startKey, '2027-04-30');
+eq('…ending before may’s', r.endKey, '2027-05-29');
+
+// stepping months must use the chosen day, not the day a short month forced
+eq('stepping out of february returns to the 30th',
+  Calc.cycleAt(new Date(2027, 1, 28), 30, 1).startKey, '2027-03-30');
+eq('stepping back from february keeps the 30th',
+  Calc.cycleAt(new Date(2027, 1, 28), 30, -1).startKey, '2027-01-30');
+eq('stepping back into february falls back again',
+  Calc.cycleAt(new Date(2027, 2, 30), 30, -1).startKey, '2027-02-28');
+
+// year rollover on a late start day
+r = Calc.cycleRange(new Date(2027, 0, 5), 30);
+eq('a 30th cycle rolls back into december', r.startKey, '2026-12-30');
+eq('…and ends in january', r.endKey, '2027-01-29');
+
+// every start day must tile the calendar with no gap and no overlap
+let gaps = 0, overlaps = 0, badLength = 0;
+for (let day = 1; day <= 30; day++) {
+  for (let m = 0; m < 14; m++) {
+    const ref = new Date(2027, m, 15);
+    const cur = Calc.cycleAt(ref, day, 0);
+    const prev = Calc.cycleAt(ref, day, -1);
+    const dayAfterPrev = new Date(prev.end.getFullYear(), prev.end.getMonth(), prev.end.getDate() + 1);
+    const key = dayAfterPrev.getFullYear() + '-' +
+      String(dayAfterPrev.getMonth() + 1).padStart(2, '0') + '-' +
+      String(dayAfterPrev.getDate()).padStart(2, '0');
+    if (key !== cur.startKey) { (prev.endKey < cur.startKey ? gaps++ : overlaps++); }
+    if (cur.days < 28 || cur.days > 31) badLength++;
+  }
+}
+eq('no gap between consecutive cycles, any start day', gaps, 0);
+eq('no overlap between consecutive cycles, any start day', overlaps, 0);
+eq('every cycle is 28-31 days long', badLength, 0);
+
+// the setting itself is held inside the allowed range
+Store.setSettings({ cycleStartDay: 30 });
+eq('30 is accepted', Store.get().settings.cycleStartDay, 30);
+Store.setSettings({ cycleStartDay: 31 });
+eq('31 is pulled back to 30', Store.get().settings.cycleStartDay, 30);
+Store.setSettings({ cycleStartDay: 0 });
+eq('0 falls back to the 1st', Store.get().settings.cycleStartDay, 1);
+Store.setSettings({ cycleStartDay: 1 });
+
 // ---- the dashboard numbers -------------------------------------------------
 section('daily limit & summary');
 Store.load();

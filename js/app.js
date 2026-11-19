@@ -660,7 +660,7 @@
     if (!force && cs.dataset.lang === I18n.current() && cs.options.length) return;
     var keep = cs.value;
     var html = '';
-    for (var d = 1; d <= 28; d++) {
+    for (var d = 1; d <= 30; d++) {
       var label = d === 1 ? t('set.calendarMonth', { day: dayOrdinal(1) }) : dayOrdinal(d);
       html += '<option value="' + d + '">' + esc(label) + '</option>';
     }

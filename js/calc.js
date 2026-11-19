@@ -38,23 +38,47 @@
 
   // ---- budget cycle -------------------------------------------------------
 
+  /** The highest day of the month a cycle may start on. */
+  var MAX_START_DAY = 30;
+
+  /** How many days a month really has. Day 0 of the next month is the last
+      day of this one, so February answers 28 or 29 on its own. */
+  function daysInMonth(year, monthIndex) {
+    return new Date(year, monthIndex + 1, 0).getDate();
+  }
+
+  /** The chosen start day inside one month, pulled back when that month is
+      too short to have it: 30 lands on 28 February, or 29 in a leap year. */
+  function cycleAnchor(year, monthIndex, startDay) {
+    return new Date(year, monthIndex, Math.min(startDay, daysInMonth(year, monthIndex)));
+  }
+
+  function normalizeStartDay(startDay) {
+    return clamp(parseInt(startDay, 10) || 1, 1, MAX_START_DAY);
+  }
+
   /** First day of the budget cycle that contains `d`. */
   function cycleStart(d, startDay) {
-    startDay = clamp(parseInt(startDay, 10) || 1, 1, 28);
-    if (d.getDate() >= startDay) return new Date(d.getFullYear(), d.getMonth(), startDay);
-    return new Date(d.getFullYear(), d.getMonth() - 1, startDay);
+    startDay = normalizeStartDay(startDay);
+    var here = cycleAnchor(d.getFullYear(), d.getMonth(), startDay);
+    if (d.getDate() >= here.getDate()) return here;
+    return cycleAnchor(d.getFullYear(), d.getMonth() - 1, startDay);
   }
 
   /** Last day of the cycle that contains `d`. */
   function cycleEnd(d, startDay) {
+    startDay = normalizeStartDay(startDay);
     var s = cycleStart(d, startDay);
-    return addDays(new Date(s.getFullYear(), s.getMonth() + 1, s.getDate()), -1);
+    return addDays(cycleAnchor(s.getFullYear(), s.getMonth() + 1, startDay), -1);
   }
 
   /** The cycle `offset` cycles away from the one containing `ref` (0 = current). */
   function cycleAt(ref, startDay, offset) {
+    startDay = normalizeStartDay(startDay);
     var s = cycleStart(ref || today(), startDay);
-    var moved = new Date(s.getFullYear(), s.getMonth() + (offset || 0), s.getDate());
+    // Step whole months from the day the user chose, not from `s` - a cycle
+    // pulled back to 28 February must not carry that 28 into March.
+    var moved = cycleAnchor(s.getFullYear(), s.getMonth() + (offset || 0), startDay);
     return cycleRange(moved, startDay);
   }
 

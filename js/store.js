@@ -78,7 +78,7 @@
       expenses: Array.isArray(data.expenses) ? data.expenses : []
     };
     // keep stored currency/country even if the browser locale now says otherwise
-    out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 28, 1);
+    out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 30, 1);
     out.settings.nearBudgetPct = clampInt(out.settings.nearBudgetPct, 50, 99, 80);
     out.settings.monthlyBudget = Math.max(0, Number(out.settings.monthlyBudget) || 0);
     if (global.Currencies) {
@@ -154,7 +154,7 @@
         state.settings.locale = global.Currencies.localeFor(state.settings.country, state.settings.lang);
       }
     }
-    state.settings.cycleStartDay = clampInt(state.settings.cycleStartDay, 1, 28, 1);
+    state.settings.cycleStartDay = clampInt(state.settings.cycleStartDay, 1, 30, 1);
     state.settings.monthlyBudget = Math.max(0, Number(state.settings.monthlyBudget) || 0);
     commit();
   }
