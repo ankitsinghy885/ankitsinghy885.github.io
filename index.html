@@ -17,6 +17,39 @@
 </head>
 <body>
 
+<!-- Wide screens get this rail; on a phone it is hidden and the bottom bar
+     at the end of the page does the navigating instead. -->
+<aside class="sidebar">
+  <div class="side-brand">
+    <img class="side-logo" src="icons/icon-64.png?v=2" alt="" width="38" height="38" decoding="async">
+    <div class="side-brand-text">
+      <p class="side-name" data-i18n="app.name">Expense Tracker</p>
+      <p class="side-tag" data-i18n="side.tagline">Track · Plan · Save</p>
+    </div>
+  </div>
+
+  <nav class="side-nav" data-i18n-aria="a11y.mainNav">
+    <button type="button" class="tab side-link is-on" data-tab="home">
+      <span class="side-icon" data-icon="home" aria-hidden="true"></span>
+      <span data-i18n="nav.dashboard">Dashboard</span>
+    </button>
+    <button type="button" class="tab side-link" data-tab="history">
+      <span class="side-icon" data-icon="receipt" aria-hidden="true"></span>
+      <span data-i18n="nav.history">History</span>
+    </button>
+    <button type="button" class="tab side-link" data-tab="settings">
+      <span class="side-icon" data-icon="gear" aria-hidden="true"></span>
+      <span data-i18n="nav.settings">Settings</span>
+    </button>
+  </nav>
+
+  <div class="side-promo">
+    <span class="side-promo-art" data-icon="bars" aria-hidden="true"></span>
+    <p class="side-promo-title" data-i18n="side.promoTitle">Stay in control of your money</p>
+    <p class="side-promo-sub" data-i18n="side.promoSub">Track expenses, manage your budget and build better spending habits.</p>
+  </div>
+</aside>
+
 <header class="app-bar">
   <img class="brand-logo" src="icons/icon-64.png?v=2" alt="" width="40" height="40" decoding="async">
   <div class="app-bar-main">
@@ -45,31 +78,37 @@
   <section id="view-home" class="view" aria-labelledby="homeHeading">
     <h2 id="homeHeading" class="sr-only" data-i18n="home.heading">Dashboard</h2>
 
+    <div class="page-head">
+      <div class="page-head-main">
+        <p class="page-title" data-i18n="home.pageTitle">Your money, at a glance</p>
+        <p class="page-sub" data-i18n="home.pageSub">Track your spending, manage your budget and make smarter money decisions.</p>
+      </div>
+      <button type="button" class="btn btn-primary btn-add" id="addTopBtn">
+        <span class="btn-plus" aria-hidden="true">+</span>
+        <span data-i18n="home.addExpense">Add expense</span>
+      </button>
+    </div>
+
+    <div class="period-row">
+      <span class="period-pill">
+        <span class="period-icon" data-icon="calendar" aria-hidden="true"></span>
+        <span id="periodLabel">&nbsp;</span>
+      </span>
+      <span class="period-range" id="periodRange">&nbsp;</span>
+    </div>
+
     <div id="alerts" class="alerts" aria-live="polite"></div>
 
-    <section class="card hero-card" id="heroCard">
-      <span class="hero-art" data-art="wave" aria-hidden="true"></span>
-
-      <div class="hero-ring">
-        <svg class="ring" viewBox="0 0 160 160" aria-hidden="true" focusable="false">
-          <circle class="ring-track" cx="80" cy="80" r="68"></circle>
-          <circle class="ring-fill" id="dayRing" cx="80" cy="80" r="68"></circle>
-        </svg>
-        <div class="hero-ring-mid">
+    <div class="tiles">
+      <div class="tile" data-hue="rose">
+        <span class="tile-icon" data-icon="wallet" aria-hidden="true"></span>
+        <div class="tile-body">
           <p class="label" data-i18n="home.spentToday">Spent today</p>
-          <p id="todaySpend" class="hero">&mdash;</p>
-          <p id="todayMeta" class="meta">&nbsp;</p>
+          <p class="tile-value" id="todaySpend">&mdash;</p>
+          <p class="tile-note" id="todayMeta">&nbsp;</p>
         </div>
       </div>
-
-      <div class="hero-legend" id="dayMeterWrap">
-        <span id="dayMeterLeft">&nbsp;</span>
-        <span id="dayMeterRight" class="muted">&nbsp;</span>
-      </div>
-    </section>
-
-    <div class="tiles">
-      <div class="tile is-tappable" data-hue="blue" id="tileLimitCard" role="button" tabindex="0" aria-expanded="false">
+      <div class="tile is-tappable" data-hue="green" id="tileLimitCard" role="button" tabindex="0" aria-expanded="false">
         <span class="tile-icon" data-icon="shield" aria-hidden="true"></span>
         <div class="tile-body">
           <p class="label" data-i18n="tile.limit">Safe to spend / day</p>
@@ -77,7 +116,7 @@
           <p class="tile-note" id="tileLimitNote">&nbsp;</p>
         </div>
       </div>
-      <div class="tile" data-hue="violet">
+      <div class="tile" data-hue="teal">
         <span class="tile-icon" data-icon="clock" aria-hidden="true"></span>
         <div class="tile-body">
           <p class="label" data-i18n="tile.leftToday">Left today</p>
@@ -85,7 +124,7 @@
           <p class="tile-note" id="tileLeftNote">&nbsp;</p>
         </div>
       </div>
-      <div class="tile" data-hue="orange">
+      <div class="tile" data-hue="blue">
         <span class="tile-icon" data-icon="pie" aria-hidden="true"></span>
         <div class="tile-body">
           <p class="label" data-i18n="tile.month">Spent this month</p>
@@ -93,8 +132,8 @@
           <p class="tile-note" id="tileMonthNote">&nbsp;</p>
         </div>
       </div>
-      <div class="tile" data-hue="aqua">
-        <span class="tile-icon" data-icon="wallet" aria-hidden="true"></span>
+      <div class="tile" data-hue="violet">
+        <span class="tile-icon" data-icon="target" aria-hidden="true"></span>
         <div class="tile-body">
           <p class="label" data-i18n="tile.remaining">Budget left</p>
           <p class="tile-value" id="tileRemaining">&mdash;</p>
@@ -103,43 +142,29 @@
       </div>
     </div>
 
-    <!-- two columns that stack on their own, so a short card never
-         leaves a hole under it; on a phone they collapse away -->
+    <section class="card budget-card">
+      <div class="card-head">
+        <span class="card-icon" data-icon="target" data-hue="green" aria-hidden="true"></span>
+        <h3 class="card-title" data-i18n="budget.title">Monthly budget</h3>
+        <span class="budget-total" id="budgetTotal">&nbsp;</span>
+        <button type="button" class="link-btn" data-goto="settings" data-i18n="common.edit">Edit</button>
+      </div>
+      <div class="meter">
+        <div class="meter-track" id="budgetTrack"><div class="meter-fill" id="budgetMeter"></div></div>
+        <div class="meter-legend">
+          <span id="budgetMeterLeft">&nbsp;</span>
+          <span id="budgetMeterRight" class="muted">&nbsp;</span>
+        </div>
+      </div>
+      <dl class="kv" id="budgetFacts"></dl>
+      <div class="budget-empty" id="budgetEmpty" hidden></div>
+    </section>
+
+    <!-- the only row that splits in two; everything else runs full width -->
     <div class="home-col home-col-a">
       <section class="card">
         <div class="card-head">
-          <span class="card-icon" data-icon="target" data-hue="violet" aria-hidden="true"></span>
-          <h3 class="card-title" data-i18n="budget.title">Monthly budget</h3>
-          <button type="button" class="link-btn" data-goto="settings" data-i18n="common.edit">Edit</button>
-        </div>
-        <div class="meter">
-          <div class="meter-track" id="budgetTrack"><div class="meter-fill" id="budgetMeter"></div></div>
-          <div class="meter-legend">
-            <span id="budgetMeterLeft">&nbsp;</span>
-            <span id="budgetMeterRight" class="muted">&nbsp;</span>
-          </div>
-        </div>
-        <dl class="kv" id="budgetFacts"></dl>
-        <div class="budget-empty" id="budgetEmpty" hidden></div>
-      </section>
-      <section class="card">
-        <div class="card-head">
-          <span class="card-icon" data-icon="pie" data-hue="aqua" aria-hidden="true"></span>
-          <h3 class="card-title" data-i18n="cats.title">Where the money went</h3>
-          <span class="card-tag" id="catTag">&nbsp;</span>
-        </div>
-        <div id="catBars"></div>
-        <details class="table-view" id="catTableWrap">
-          <summary data-i18n="table.show">Show as table</summary>
-          <div class="table-scroll" id="catTable"></div>
-        </details>
-      </section>
-    </div>
-
-    <div class="home-col home-col-b">
-      <section class="card">
-        <div class="card-head">
-          <span class="card-icon" data-icon="bars" data-hue="blue" aria-hidden="true"></span>
+          <span class="card-icon" data-icon="bars" data-hue="green" aria-hidden="true"></span>
           <h3 class="card-title" data-i18n="chart.title">Daily spending</h3>
           <div class="seg" role="group" data-i18n-aria="a11y.chartRange">
             <button type="button" class="seg-btn is-on" data-range="7" data-i18n="chart.range7">7 days</button>
@@ -153,15 +178,34 @@
           <div class="table-scroll" id="chartTable"></div>
         </details>
       </section>
+    </div>
+
+    <div class="home-col home-col-b">
       <section class="card">
         <div class="card-head">
-          <span class="card-icon" data-icon="receipt" data-hue="orange" aria-hidden="true"></span>
-          <h3 class="card-title" data-i18n="recent.title">Recent expenses</h3>
-          <button type="button" class="link-btn" data-goto="history" data-i18n="recent.seeAll">See all</button>
+          <span class="card-icon" data-icon="pie" data-hue="teal" aria-hidden="true"></span>
+          <h3 class="card-title" data-i18n="cats.title">Where the money went</h3>
+          <span class="card-tag" id="catTag">&nbsp;</span>
         </div>
-        <div id="recentList"></div>
+        <div class="cat-split">
+          <div class="cat-donut" id="catDonut"></div>
+          <div class="cat-legend" id="catBars"></div>
+        </div>
+        <details class="table-view" id="catTableWrap">
+          <summary data-i18n="table.show">Show as table</summary>
+          <div class="table-scroll" id="catTable"></div>
+        </details>
       </section>
     </div>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="card-icon" data-icon="clock" data-hue="blue" aria-hidden="true"></span>
+        <h3 class="card-title" data-i18n="recent.title">Recent expenses</h3>
+        <button type="button" class="link-btn" data-goto="history" data-i18n="recent.seeAll">See all</button>
+      </div>
+      <div id="recentList"></div>
+    </section>
   </section>
 
   <!-- ───────────────────────── HISTORY ───────────────────────── -->

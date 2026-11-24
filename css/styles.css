@@ -3,18 +3,18 @@
 
 :root {
   color-scheme: light;
-  --plane: #f9f9f7;
-  --surface: #fcfcfb;
-  --surface-2: #f2f1ec;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --ink-muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --hairline: rgba(11, 11, 11, 0.10);
-  --series: #2a78d6;
-  --series-soft: #cde2fb;
-  --track: #cde2fb;
+  --plane: #f3f7f5;
+  --surface: #ffffff;
+  --surface-2: #eef4f1;
+  --ink: #0d1a14;
+  --ink-2: #4a5b53;
+  --ink-muted: #87958f;
+  --grid: #e4ece8;
+  --axis: #c4d2cb;
+  --hairline: rgba(13, 26, 20, 0.10);
+  --series: #16a34a;
+  --series-soft: #bbf7d0;
+  --track: #e4ece8;
   --good: #0ca30c;
   --warning: #fab219;
   --serious: #ec835a;
@@ -29,57 +29,101 @@
 
   /* brand surfaces: a soft wash behind the page, a deep gradient for the hero.
      Every stop below keeps white text at 5:1 or better. */
-  --plane-tint: #e9f0fb;
-  --hero-grad: linear-gradient(135deg, #256abf 0%, #1c5cab 42%, #4a3aa7 100%);
+  --plane-tint: #eef4f1;
+  --hero-grad: linear-gradient(135deg, #15803d 0%, #11703a 42%, #0e5f46 100%);
   --on-hero: #ffffff;
   --on-hero-soft: rgba(255, 255, 255, 0.82);
   --hero-track: rgba(255, 255, 255, 0.26);
   --hero-warning: #ffd98a;
   --hero-over: #ffb3ae;
+
+  /* the navigation rail on wide screens */
+  --side-bg: linear-gradient(180deg, #0c1b24 0%, #0d2420 100%);
+  --side-ink: #eaf2ee;
+  --side-ink-2: rgba(234, 242, 238, 0.58);
+  --side-hair: rgba(234, 242, 238, 0.12);
+
+  /* Categorical slots for the category ring. Fixed order, never cycled:
+     a category keeps its hue when a filter changes the list. Validated for
+     both modes with the skill's checker - adjacent CVD dE 9.1 light / 8.4
+     dark. Three light steps sit under 3:1 on white, so the legend beside the
+     ring always carries the names, amounts and shares in text. */
+  --slot-1: #2a78d6;
+  --slot-2: #eb6834;
+  --slot-3: #1baf7a;
+  --slot-4: #eda100;
+  --slot-5: #e87ba4;
+  --slot-6: #008300;
+  --slot-7: #6250d6;
+  --slot-8: #e34948;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --plane: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-2: #232321;
+    --plane: #0b1210;
+    --surface: #15201b;
+    --surface-2: #1c2823;
     --ink: #f0efec;
-    --ink-2: #c3c2b7;
-    --ink-muted: #898781;
-    --grid: #2c2c2a;
-    --axis: #383835;
+    --ink-2: #b6c4bc;
+    --ink-muted: #7e8d85;
+    --grid: #26322c;
+    --axis: #33423b;
     --hairline: rgba(255, 255, 255, 0.10);
-    --series: #3987e5;
-    --series-soft: #184f95;
-    --track: #184f95;
+    --series: #22c55e;
+    --series-soft: #14532d;
+    --track: #24302b;
     --good-text: #0ca30c;
     --critical-text: #e66767;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.45);
-    --plane-tint: #11161f;
-    --hero-grad: linear-gradient(135deg, #1c5cab 0%, #164a8e 42%, #3b2f8f 100%);
+    --plane-tint: #101a15;
+    --hero-grad: linear-gradient(135deg, #15803d 0%, #116b3c 42%, #0d5a46 100%);
+    --side-bg: linear-gradient(180deg, #0a1419 0%, #0b1c18 100%);
+    --side-ink: #eaf2ee;
+    --side-ink-2: rgba(234, 242, 238, 0.58);
+    --side-hair: rgba(234, 242, 238, 0.12);
+    --slot-1: #3987e5;
+    --slot-2: #d95926;
+    --slot-3: #199e70;
+    --slot-4: #c98500;
+    --slot-5: #d55181;
+    --slot-6: #0ca30c;
+    --slot-7: #9085e9;
+    --slot-8: #e66767;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --plane: #0d0d0d;
-  --surface: #1a1a19;
-  --surface-2: #232321;
+  --plane: #0b1210;
+  --surface: #15201b;
+  --surface-2: #1c2823;
   --ink: #f0efec;
-  --ink-2: #c3c2b7;
-  --ink-muted: #898781;
-  --grid: #2c2c2a;
-  --axis: #383835;
+  --ink-2: #b6c4bc;
+  --ink-muted: #7e8d85;
+  --grid: #26322c;
+  --axis: #33423b;
   --hairline: rgba(255, 255, 255, 0.10);
-  --series: #3987e5;
-  --series-soft: #184f95;
-  --track: #184f95;
+  --series: #22c55e;
+  --series-soft: #14532d;
+  --track: #24302b;
   --good-text: #0ca30c;
   --critical-text: #e66767;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
-  --plane-tint: #11161f;
-  --hero-grad: linear-gradient(135deg, #1c5cab 0%, #164a8e 42%, #3b2f8f 100%);
+  --plane-tint: #101a15;
+  --hero-grad: linear-gradient(135deg, #15803d 0%, #116b3c 42%, #0d5a46 100%);
+  --side-bg: linear-gradient(180deg, #0a1419 0%, #0b1c18 100%);
+  --side-ink: #eaf2ee;
+  --side-ink-2: rgba(234, 242, 238, 0.58);
+  --side-hair: rgba(234, 242, 238, 0.12);
+  --slot-1: #3987e5;
+  --slot-2: #d95926;
+  --slot-3: #199e70;
+  --slot-4: #c98500;
+  --slot-5: #d55181;
+  --slot-6: #0ca30c;
+  --slot-7: #9085e9;
+  --slot-8: #e66767;
 }
 
 * { box-sizing: border-box; }
@@ -204,11 +248,10 @@ button { cursor: pointer; }
 }
 /* The two lower columns are invisible on a phone: their cards become direct
    children of the view and `order` keeps the original reading order. */
+/* On a phone the two wrappers vanish and their cards simply fall into the
+   page in source order - no `order` juggling, which is what used to drag the
+   last full-width card up above them. */
 .home-col { display: contents; }
-.home-col-a > :nth-child(1) { order: 1; }   /* monthly budget */
-.home-col-b > :nth-child(1) { order: 2; }   /* daily spending */
-.home-col-a > :nth-child(2) { order: 3; }   /* where the money went */
-.home-col-b > :nth-child(2) { order: 4; }   /* recent expenses */
 
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .card-title { font-size: 0.9375rem; font-weight: 650; }
@@ -219,95 +262,6 @@ button { cursor: pointer; }
   font-size: 0.75rem; color: var(--ink-2); font-weight: 500;
 }
 .meta { font-size: 0.8125rem; color: var(--ink-muted); }
-
-
-/* ── hero ────────────────────────────────────────────────── */
-.hero-card {
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-  border: 0;
-  background: var(--hero-grad);
-  color: var(--on-hero);
-  box-shadow: 0 2px 6px rgba(16, 66, 129, 0.25), 0 14px 32px rgba(16, 66, 129, 0.22);
-}
-/* two soft discs so the card is not a flat slab */
-.hero-card::before,
-.hero-card::after {
-  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
-}
-.hero-card::before {
-  width: 220px; height: 220px; right: -70px; top: -110px;
-  background: rgba(255, 255, 255, 0.10);
-}
-.hero-card::after {
-  width: 150px; height: 150px; right: 24px; bottom: -95px;
-  background: rgba(255, 255, 255, 0.07);
-}
-.hero-card > * { position: relative; z-index: 1; }
-.hero-card .label { color: var(--on-hero-soft); }
-.hero-card .meta { color: var(--on-hero-soft); }
-
-/* ── hero ring ───────────────────────────────────────────────
-   One arc for today's spend against today's limit. The amount sits
-   inside it, so the card reads in a single glance instead of needing
-   a bar and a number in two different places. */
-.hero-ring {
-  position: relative;
-  width: min(236px, 66vw);
-  aspect-ratio: 1;
-  margin: 2px auto 0;
-  display: grid;
-  place-items: center;
-}
-.ring {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  transform: rotate(-90deg);          /* the arc starts at 12 o'clock */
-  overflow: visible;
-}
-.ring-track,
-.ring-fill { fill: none; stroke-width: 12; stroke-linecap: round; }
-.ring-track { stroke: var(--hero-track); }
-.ring-fill {
-  stroke: var(--on-hero);
-  transition: stroke-dashoffset 420ms cubic-bezier(0.4, 0, 0.2, 1), stroke 240ms ease, opacity 240ms ease;
-}
-.ring-fill[data-state="warning"] { stroke: var(--hero-warning); }
-.ring-fill[data-state="over"] { stroke: var(--hero-over); }
-/* no budget set yet: show the empty track rather than hiding the ring */
-.hero-card[data-nolimit] .ring-fill { opacity: 0; }
-
-/* kept inside the ring's hole so the stroke never cuts through the text.
-   70% of the ring is narrower than the hole's chord at every line, including
-   the meta line that sits lowest. */
-.hero-ring-mid {
-  position: relative; z-index: 1;
-  display: grid; gap: 1px;
-  text-align: center;
-  width: 70%;
-  min-width: 0;
-}
-.hero-ring-mid .meta { font-size: 0.6875rem; }
-/* the amount is one token - never let it break across two lines */
-.hero-ring-mid .hero { white-space: nowrap; }
-
-.hero-legend {
-  display: flex; justify-content: space-between; gap: 8px;
-  font-size: 0.75rem; color: var(--on-hero);
-}
-.hero-legend .muted { color: var(--on-hero-soft); }
-
-.hero {
-  font-size: clamp(2.125rem, 9vw, 2.625rem);
-  line-height: 1.05;
-  font-weight: 680;
-  letter-spacing: -0.03em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ring-fill { transition: none; }
-}
 
 /* ── meter ───────────────────────────────────────────────── */
 .meter { display: grid; gap: 6px; margin-top: 6px; }
@@ -326,6 +280,9 @@ button { cursor: pointer; }
 
 /* ── tiles ───────────────────────────────────────────────── */
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* five tiles over two columns leave the last one beside a hole, so it takes
+   the whole row instead. The five-across layout undoes this. */
+.tiles > :last-child { grid-column: 1 / -1; }
 .tile {
   position: relative; overflow: hidden;
   --hue: var(--series);
@@ -336,10 +293,13 @@ button { cursor: pointer; }
   padding: 13px; display: grid; grid-template-columns: 1fr; gap: 9px; align-items: start;
 }
 /* each tile keeps one identity colour; status still speaks through the value */
-.tile[data-hue="blue"] { --hue: #2a78d6; }
-.tile[data-hue="violet"] { --hue: #6250d6; }
-.tile[data-hue="orange"] { --hue: #eb6834; }
-.tile[data-hue="aqua"] { --hue: #1baf7a; }
+/* One identity colour per tile. These name a slot, not a status - the value
+   inside still turns red or green on its own when it needs to. */
+.tile[data-hue="rose"] { --hue: #e11d48; }
+.tile[data-hue="green"] { --hue: #16a34a; }
+.tile[data-hue="teal"] { --hue: #0d9488; }
+.tile[data-hue="blue"] { --hue: #2563eb; }
+.tile[data-hue="violet"] { --hue: #7c3aed; }
 .tile[data-accent="bad"] { --hue: var(--critical); }
 
 .tile-icon {
@@ -364,10 +324,11 @@ button { cursor: pointer; }
   background: color-mix(in srgb, var(--hue, var(--series)) 15%, transparent);
   color: var(--hue, var(--series));
 }
-.card-icon[data-hue="blue"] { --hue: #2a78d6; }
-.card-icon[data-hue="violet"] { --hue: #6250d6; }
-.card-icon[data-hue="orange"] { --hue: #eb6834; }
-.card-icon[data-hue="aqua"] { --hue: #1baf7a; }
+.card-icon[data-hue="rose"] { --hue: #e11d48; }
+.card-icon[data-hue="green"] { --hue: #16a34a; }
+.card-icon[data-hue="teal"] { --hue: #0d9488; }
+.card-icon[data-hue="blue"] { --hue: #2563eb; }
+.card-icon[data-hue="violet"] { --hue: #7c3aed; }
 .card-icon svg { width: 19px; height: 19px; display: block; }
 .card-head .card-title { flex: 1; min-width: 0; }
 .tile-value { font-size: 1.375rem; font-weight: 650; letter-spacing: -0.02em; }
@@ -473,8 +434,18 @@ table.data td.num, table.data th.num { text-align: right; }
   display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center;
   background: var(--surface); border: 1px solid var(--hairline);
   border-radius: 14px; padding: 10px 12px; box-shadow: var(--shadow);
-  width: 100%; text-align: left;
+  width: 100%; text-align: left; cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease;
 }
+/* a row opens the expense for editing, so on a pointer it should say so */
+@media (hover: hover) {
+  .exp:hover {
+    border-color: color-mix(in srgb, var(--series) 45%, var(--hairline));
+    background: color-mix(in srgb, var(--series) 4%, var(--surface));
+  }
+}
+.exp:active { transform: translateY(1px); }
+.exp:focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
 .exp-icon {
   width: 36px; height: 36px; border-radius: 11px; background: var(--surface-2);
   display: grid; place-items: center; font-size: 1.0625rem;
@@ -510,12 +481,6 @@ table.data td.num, table.data th.num { text-align: right; }
 .scene { display: grid; justify-items: center; }
 .scene svg { display: block; width: 100%; max-width: 270px; height: auto; }
 
-.hero-art {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 120px;
-  pointer-events: none; z-index: 0;
-}
-.hero-art svg { display: block; width: 100%; height: 100%; }
-
 .hint.with-badge { display: flex; align-items: flex-start; gap: 8px; }
 .badge-art { flex: 0 0 auto; width: 20px; height: 20px; }
 .badge-art svg { display: block; width: 100%; height: 100%; }
@@ -527,7 +492,6 @@ table.data td.num, table.data th.num { text-align: right; }
 .budget-empty svg { display: block; width: 108px; height: 72px; }
 .budget-empty span { font-size: 0.8125rem; color: var(--ink-muted); }
 .budget-empty .btn { width: 100%; max-width: 240px; }
-
 
 /* ── forms ───────────────────────────────────────────────── */
 .field { display: grid; gap: 6px; }
@@ -749,9 +713,6 @@ body.is-locked { overflow: hidden; }
 
   /* the tiles are wide enough now for the icon to sit beside the text */
   .tile { grid-template-columns: auto 1fr; gap: 12px; padding: 15px; align-items: start; }
-  .hero { font-size: 2.5rem; }
-  .hero-card { padding: 20px; }
-  .hero-ring { width: 252px; }
 
   .tabbar {
     left: 50%; right: auto; transform: translateX(-50%);
@@ -764,23 +725,6 @@ body.is-locked { overflow: hidden; }
   .toast-wrap { bottom: 104px; }
 }
 
-/* ── tablet: ring and its figures side by side ─────────────────────────────
-   Between these widths the hero is full width but the two columns of cards
-   have not kicked in yet, so a centred ring leaves empty flanks. Putting the
-   figures beside it uses that room and shortens the card. */
-@media (min-width: 620px) and (max-width: 899px) {
-  .hero-card {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    column-gap: 26px;
-  }
-  .hero-ring { margin: 0; }
-  .hero-legend {
-    flex-direction: column; align-items: flex-start; justify-content: center;
-    gap: 6px; font-size: 0.9375rem;
-  }
-}
-
 /* ── wide screens: more room for the cards, nav stays at the bottom ─────── */
 
 @media (min-width: 900px) {
@@ -790,40 +734,31 @@ body.is-locked { overflow: hidden; }
   }
   .view { gap: 16px; }
 
-  /* The ring and the four tiles share the top row, so the ring has a
-     neighbour instead of a half-empty band beneath it. The lower cards are
-     then paired row by row: each row is as tall as its taller card and both
-     stretch to match, so neither column trails off into a hole. */
+  /* Nearly everything runs the full width; only the chart and the category
+     ring share a row, and they stretch to match each other's height. */
   #view-home {
-    grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: stretch;
   }
   .home-col { display: contents; }
 
-  #view-home > #alerts { grid-column: 1 / -1; grid-row: 1; }
-  #view-home > .hero-card { grid-column: 1; grid-row: 2; }
-  #view-home > .tiles { grid-column: 2; grid-row: 2; }
+  /* Rows are named outright. Left to itself, auto-placement pulls the
+     full-width card at the end up into the gap beside the two-column row. */
+  #view-home > .page-head { grid-column: 1 / -1; grid-row: 1; }
+  #view-home > .period-row { grid-column: 1 / -1; grid-row: 2; }
+  #view-home > #alerts { grid-column: 1 / -1; grid-row: 3; }
+  #view-home > .tiles { grid-column: 1 / -1; grid-row: 4; }
+  #view-home > .budget-card { grid-column: 1 / -1; grid-row: 5; }
+  .home-col-a > * { grid-column: 1; grid-row: 6; }
+  .home-col-b > * { grid-column: 2; grid-row: 6; }
+  #view-home > .card:last-child { grid-column: 1 / -1; grid-row: 7; }
 
-  .home-col-a > :nth-child(1) { grid-column: 1; grid-row: 3; }
-  .home-col-b > :nth-child(1) { grid-column: 2; grid-row: 3; }
-  .home-col-a > :nth-child(2) { grid-column: 1; grid-row: 4; }
-  .home-col-b > :nth-child(2) { grid-column: 2; grid-row: 4; }
-
-  /* The budget card is the short one in its row. Let its figures spread down
-     the card rather than leaving a slab of empty space under them. */
-  .home-col-a > :nth-child(1) { align-content: stretch; grid-template-rows: auto auto 1fr; }
-  #budgetFacts { align-content: space-evenly; }
-
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 16px; }
-  /* the tiles stretch to match the ring beside them, so their contents sit in
-     the middle rather than clinging to the top edge */
-  .tile { grid-template-columns: auto 1fr; gap: 12px; padding: 15px; align-items: center; align-content: center; }
-
-  .hero { font-size: 2.25rem; }
+  /* five across on a wide screen, the way the row reads in one sweep */
+  .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; }
+  .tiles > :last-child { grid-column: auto; }
+  .tile { grid-template-columns: 1fr; gap: 10px; padding: 15px; align-content: start; }
   /* note: no justify-content here - centring the grid shrinks the column to
      its content, which collapses the ring's percentage width */
-  .hero-card { padding: 22px 24px; align-content: center; }
-  .hero-ring { width: 248px; }
 
   /* History: the month summary and filters sit beside the list, not above it */
   #view-history {
@@ -873,7 +808,188 @@ body.is-locked { overflow: hidden; }
 
 @media (min-width: 1440px) {
   #main { max-width: 1320px; }
-  /* a touch more width for the ring column now that there is room for it */
-  #view-home { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); }
-  .hero-ring { width: 268px; }
+  .cat-donut { width: 206px; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Navigation rail, page head and the category ring
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* The rail is not rendered on a phone at all: the bar at the bottom of the
+   screen does the navigating there, which is where a thumb already is. */
+.sidebar { display: none; }
+
+.page-head { display: grid; gap: 10px; }
+.page-title { font-size: 1.375rem; font-weight: 680; letter-spacing: -0.02em; line-height: 1.2; }
+.page-sub { font-size: 0.8125rem; color: var(--ink-2); max-width: 54ch; }
+/* hidden on a phone: the floating button already does this, right where the
+   thumb is. The rail layout brings it back, where there is no floating one. */
+.btn-add { display: none; justify-self: start; align-items: center; gap: 8px; }
+.btn-plus { font-size: 1.1875rem; line-height: 1; font-weight: 500; }
+
+.period-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.period-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 13px; border-radius: 999px;
+  border: 1px solid var(--hairline); background: var(--surface);
+  font-size: 0.8125rem; font-weight: 550;
+}
+.period-icon { width: 17px; height: 17px; color: var(--ink-2); flex: none; }
+.period-icon svg { width: 100%; height: 100%; display: block; }
+.period-range { font-size: 0.8125rem; color: var(--ink-muted); }
+
+.budget-total { margin-left: auto; font-weight: 650; font-variant-numeric: tabular-nums; }
+
+/* Today against yesterday is a direction, so it carries a status colour - and
+   an arrow with it, because the colour must never be the only signal. */
+.tile-note[data-trend] { font-weight: 550; display: flex; align-items: center; gap: 4px; }
+.tile-note[data-trend]::before { font-size: 0.875em; line-height: 1; }
+.tile-note[data-trend="up"] { color: var(--critical-text); }
+.tile-note[data-trend="up"]::before { content: '\2191'; }
+.tile-note[data-trend="down"] { color: var(--good-text); }
+.tile-note[data-trend="down"]::before { content: '\2193'; }
+.tile-note[data-trend="flat"]::before { content: '\2192'; }
+
+/* ── category ring ──────────────────────────────────────────────────────
+   Identity, not magnitude: one fixed hue per slice, never cycled. The
+   legend beside it repeats every name, amount and share as text, which is
+   also what lets the lighter slots clear the contrast rule. */
+.cat-split { display: grid; gap: 18px; align-items: center; }
+.cat-donut { position: relative; width: min(208px, 64vw); margin: 0 auto; aspect-ratio: 1; }
+.donut-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.donut-track { stroke: var(--track); }
+.donut-arc { transition: opacity 160ms ease; }
+.donut-arc:hover, .donut-arc:focus-visible { opacity: 0.8; outline: none; }
+.donut-arc[data-slot="1"] { stroke: var(--slot-1); }
+.donut-arc[data-slot="2"] { stroke: var(--slot-2); }
+.donut-arc[data-slot="3"] { stroke: var(--slot-3); }
+.donut-arc[data-slot="4"] { stroke: var(--slot-4); }
+.donut-arc[data-slot="5"] { stroke: var(--slot-5); }
+.donut-arc[data-slot="6"] { stroke: var(--slot-6); }
+.donut-arc[data-slot="7"] { stroke: var(--slot-7); }
+.donut-arc[data-slot="8"] { stroke: var(--slot-8); }
+
+.donut-mid {
+  position: absolute; inset: 0; display: grid; place-content: center;
+  text-align: center; gap: 2px; pointer-events: none; padding: 0 22%;
+}
+.donut-total { font-size: 1.0625rem; font-weight: 680; font-variant-numeric: tabular-nums; }
+.donut-label { font-size: 0.6875rem; color: var(--ink-muted); }
+
+.cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cat-row {
+  display: grid; grid-template-columns: 10px auto minmax(0, 1fr) auto auto;
+  align-items: center; gap: 9px; font-size: 0.8125rem;
+}
+.cat-dot { width: 10px; height: 10px; border-radius: 3px; }
+.cat-dot[data-slot="1"] { background: var(--slot-1); }
+.cat-dot[data-slot="2"] { background: var(--slot-2); }
+.cat-dot[data-slot="3"] { background: var(--slot-3); }
+.cat-dot[data-slot="4"] { background: var(--slot-4); }
+.cat-dot[data-slot="5"] { background: var(--slot-5); }
+.cat-dot[data-slot="6"] { background: var(--slot-6); }
+.cat-dot[data-slot="7"] { background: var(--slot-7); }
+.cat-dot[data-slot="8"] { background: var(--slot-8); }
+.cat-ico { font-size: 0.9375rem; }
+.cat-name { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cat-pct { color: var(--ink-muted); font-variant-numeric: tabular-nums; min-width: 3.4em; text-align: right; }
+
+/* ── wide screens: the rail appears and takes over the navigating ───────── */
+
+@media (min-width: 900px) {
+  body {
+    display: grid;
+    grid-template-columns: 252px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    display: flex; flex-direction: column; gap: 24px;
+    grid-column: 1; grid-row: 1 / -1;
+    position: sticky; top: 0; height: 100vh;
+    padding: 20px 14px calc(env(safe-area-inset-bottom) + 18px);
+    background: var(--side-bg);
+    color: var(--side-ink);
+  }
+  .side-brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px; }
+  .side-logo { border-radius: 10px; flex: none; }
+  .side-brand-text { min-width: 0; }
+  .side-name { font-size: 0.9375rem; font-weight: 650; line-height: 1.2; }
+  .side-tag { font-size: 0.6875rem; color: var(--side-ink-2); margin-top: 2px; }
+
+  .side-nav { display: grid; gap: 6px; }
+  .side-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 13px; border-radius: 13px;
+    border: 0; background: none; cursor: pointer;
+    color: var(--side-ink-2);
+    font: inherit; font-size: 0.875rem; font-weight: 550; text-align: left;
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+  .side-link:hover { background: rgba(255, 255, 255, 0.06); color: var(--side-ink); }
+  .side-link:focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
+  .side-link.is-on { background: var(--series); color: #ffffff; }
+  .side-icon { width: 19px; height: 19px; flex: none; }
+  .side-icon svg { width: 100%; height: 100%; display: block; }
+
+  .side-promo {
+    margin-top: auto; display: grid; gap: 7px;
+    padding: 16px 15px; border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--side-hair);
+  }
+  .side-promo-art { width: 26px; height: 26px; color: var(--series); }
+  .side-promo-art svg { width: 100%; height: 100%; display: block; }
+  .side-promo-title { font-size: 0.9375rem; font-weight: 650; line-height: 1.25; }
+  .side-promo-sub { font-size: 0.75rem; color: var(--side-ink-2); line-height: 1.45; }
+
+  .app-bar { grid-column: 2; grid-row: 1; }
+  /* the rail already takes its share of the window, so the content uses what
+     is left rather than sitting in a narrow ribbon down the middle */
+  /* As a grid item, `margin: 0 auto` cancels the stretch and leaves the width
+     at fit-content - the box then shrinks to its content instead of honouring
+     max-width. Centre it with justify-self and keep the margins at zero. */
+  #main {
+    grid-column: 2; grid-row: 2;
+    width: 100%; max-width: 1460px;
+    margin: 0; justify-self: center;
+    padding: 20px 32px calc(env(safe-area-inset-bottom) + 40px);
+  }
+  .tabbar { display: none; }
+
+  /* The rail already says whose app this is, so the bar keeps only the
+     controls - and with nothing else in it, it has no reason to be as tall
+     or as separated as it is on a phone. */
+  .app-bar .brand-logo, .app-bar .app-bar-main { display: none; }
+  .app-bar {
+    justify-content: flex-end;
+    padding: 12px 32px;
+    border-bottom: 0;
+    background: none;
+    backdrop-filter: none;
+  }
+
+  /* the page head carries its own Add button, so the floating one would be a
+     second way to do the same thing in the same view */
+  body:has(#view-home:not([hidden])) .fab { display: none; }
+
+  .page-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start; gap: 16px;
+  }
+  .page-head-main { display: grid; gap: 6px; }
+  .page-title { font-size: 1.625rem; }
+  .btn-add { display: inline-flex; justify-self: end; }
+
+  /* This card stretches to match the chart beside it. Let the ring and its
+     legend take the slack instead of leaving a slab under them. */
+  .home-col-b > .card { grid-template-rows: auto 1fr auto; }
+  .cat-split {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 22px; align-content: center;
+  }
+  .cat-donut { width: 184px; margin: 0; }
+  .cat-list { gap: 13px; }
 }

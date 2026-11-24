@@ -142,7 +142,19 @@
       '<rect x="15.8" y="10.2" width="4.2" height="9.8" rx="1.6" fill="currentColor" opacity="0.45"/>',
     receipt: '<path d="M5.4 3.6 h13.2 v16.8 l-2.6 -1.6 -2.2 1.6 -2.2 -1.6 -2.2 1.6 -2.2 -1.6 -1.8 1.6 Z" ' +
       'fill="currentColor" opacity="0.22"/>' +
-      '<path d="M8.6 8.4 h6.8 M8.6 12 h4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+      '<path d="M8.6 8.4 h6.8 M8.6 12 h4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    home: '<path d="M4 10.6 L12 4 l8 6.6 V20 a1 1 0 0 1 -1 1 h-4.4 v-5.4 h-5.2 V21 H5 a1 1 0 0 1 -1 -1 Z" ' +
+      'fill="currentColor" opacity="0.26"/>' +
+      '<path d="M3.2 11.2 L12 4 l8.8 7.2" fill="none" stroke="currentColor" stroke-width="1.9" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>',
+    gear: '<circle cx="12" cy="12" r="7.4" fill="currentColor" opacity="0.22"/>' +
+      '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/>' +
+      '<path d="M12 2.6 v2.6 M12 18.8 v2.6 M2.6 12 h2.6 M18.8 12 h2.6 ' +
+      'M5.3 5.3 l1.9 1.9 M16.8 16.8 l1.9 1.9 M18.7 5.3 l-1.9 1.9 M7.2 16.8 l-1.9 1.9" ' +
+      'stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    calendar: '<rect x="3.6" y="5.4" width="16.8" height="15" rx="3" fill="currentColor" opacity="0.22"/>' +
+      '<path d="M3.6 10 h16.8" stroke="currentColor" stroke-width="1.7" opacity="0.65"/>' +
+      '<path d="M8.2 3.4 v3.4 M15.8 3.4 v3.4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
   };
 
   function icon(name) {
@@ -349,34 +361,33 @@
 
     renderAlerts(sum);
 
+    // the period this dashboard covers, named and dated
+    var range = Calc.cycleRange(Calc.today(), s.cycleStartDay);
+    $('#periodLabel').textContent = Calc.cycleLabel(range, s.cycleStartDay, s.locale);
+    $('#periodRange').textContent = Calc.rangeText
+      ? Calc.rangeText(range, s.locale)
+      : (range.startKey + ' – ' + range.endKey);
+
     $('#todaySpend').textContent = m(sum.todayTotal);
     var todayCount = state.expenses.filter(function (e) { return e.date === sum.todayKey; }).length;
-    $('#todayMeta').textContent = todayCount
-      ? tc('home.expensesToday', todayCount)
-      : t('home.noExpensesToday');
-
-    // the hero ring: one arc for today's spend against today's limit
-    var wrap = $('#dayMeterWrap');
-    var hero = $('#heroCard');
-    var ring = $('#dayRing');
-    var ringLen = 2 * Math.PI * 68;        // r = 68 in the hero SVG
-    ring.style.strokeDasharray = ringLen.toFixed(1);
-    if (sum.limit > 0) {
-      hero.removeAttribute('data-nolimit');
-      wrap.style.display = '';
-      var shown = Math.max(0, Math.min(100, sum.dayPct));
-      ring.style.strokeDashoffset = (ringLen * (1 - shown / 100)).toFixed(1);
-      ring.dataset.state = sum.dayStatus === 'over' ? 'over' : (sum.dayStatus === 'warning' ? 'warning' : 'good');
-      $('#dayMeterLeft').textContent = t('home.ofLimitToday', {
-        spent: m(sum.todayTotal), limit: mInt(sum.limit)
+    var yday = Calc.dateKey(Calc.addDays(Calc.today(), -1));
+    var ydayTotal = state.expenses.reduce(function (n, e) {
+      return e.date === yday ? n + e.amount : n;
+    }, 0);
+    var todayNote = $('#todayMeta');
+    // against yesterday reads better than a bare count, but only when there is
+    // a yesterday to compare with
+    if (ydayTotal > 0 && sum.todayTotal > 0) {
+      var delta = Math.round(((sum.todayTotal - ydayTotal) / ydayTotal) * 100);
+      todayNote.textContent = t('home.vsYesterday', {
+        pct: (delta > 0 ? '+' : '') + delta + '%'
       });
-      $('#dayMeterRight').textContent = pct(sum.dayPct);
+      todayNote.dataset.trend = delta > 0 ? 'up' : (delta < 0 ? 'down' : 'flat');
     } else {
-      // no budget yet: leave the track empty rather than hiding the whole ring
-      hero.setAttribute('data-nolimit', 'true');
-      wrap.style.display = 'none';
-      ring.style.strokeDashoffset = ringLen.toFixed(1);
-      ring.dataset.state = 'good';
+      todayNote.textContent = todayCount
+        ? tc('home.expensesToday', todayCount)
+        : t('home.noExpensesToday');
+      todayNote.removeAttribute('data-trend');
     }
 
     // the daily limit stays covered until it is tapped, so it is not on show
@@ -430,6 +441,7 @@
       setTileAccent('#tileRemaining', '');
     }
 
+    $('#budgetTotal').textContent = sum.budget > 0 ? m(sum.budget) : '';
     $('#budgetTrack').style.display = sum.budget > 0 ? '' : 'none';
     var bFill = $('#budgetMeter');
     bFill.style.width = sum.budget > 0 ? Math.min(100, sum.budgetPct) + '%' : '0%';
@@ -514,21 +526,48 @@
       return { id: r.id, name: catName(r), icon: r.icon, total: r.total, pct: r.pct };
     });
     var host = $('#catBars');
+    var donutHost = $('#catDonut');
     $('#catTag').textContent = rows.length ? tc('count.category', rows.length) : '';
     if (!rows.length) {
+      donutHost.innerHTML = '';
       host.innerHTML = emptyBox('chart', t('cats.empty'));
       $('#catTableWrap').hidden = true;
       return;
     }
     $('#catTableWrap').hidden = false;
-    var top = rows.slice(0, 6);
-    Charts.rankedBars(host, { data: top, fmt: function (v) { return m(v); }, max: rows[0].total });
-    if (rows.length > top.length) {
-      var more = document.createElement('p');
-      more.className = 'meta';
-      more.textContent = t('cats.more', { count: tc('count.moreCategory', rows.length - top.length) });
-      host.appendChild(more);
+
+    // five keep a slice of their own and the tail folds into one "Other", so
+    // the ring never asks for more hues than the palette fixes in order
+    var slices = rows.slice(0, 5);
+    var tail = rows.slice(5);
+    if (tail.length) {
+      slices = slices.concat([{
+        id: '__other',
+        name: t('cats.other'),
+        icon: '•',
+        total: tail.reduce(function (n, r) { return n + r.total; }, 0),
+        pct: tail.reduce(function (n, r) { return n + r.pct; }, 0)
+      }]);
     }
+    var shown = slices.reduce(function (n, r) { return n + r.total; }, 0);
+
+    Charts.donut(donutHost, {
+      data: slices,
+      fmt: function (v) { return m(v); },
+      centreValue: m(shown),
+      centreLabel: t('cats.totalSpent'),
+      label: t('cats.title')
+    });
+
+    host.innerHTML = '<ul class="cat-list">' + slices.map(function (r, i) {
+      return '<li class="cat-row">' +
+        '<span class="cat-dot" data-slot="' + ((i % 8) + 1) + '" aria-hidden="true"></span>' +
+        '<span class="cat-ico" aria-hidden="true">' + esc(r.icon) + '</span>' +
+        '<span class="cat-name">' + esc(r.name) + '</span>' +
+        '<span class="cat-amt">' + esc(m(r.total)) + '</span>' +
+        '<span class="cat-pct">' + esc(pct(r.pct)) + '</span>' +
+        '</li>';
+    }).join('') + '</ul>';
     $('#catTable').innerHTML =
       '<table class="data"><thead><tr><th>' + esc(t('table.category')) + '</th><th class="num">' +
       esc(t('table.spent')) + '</th><th class="num">' + esc(t('table.share')) + '</th></tr></thead><tbody>' +
@@ -1006,6 +1045,9 @@
     });
 
     $('#fab').addEventListener('click', function () { openExpenseSheet(null); });
+    // the wide layout puts the same action in the page head, where the floating
+    // button would otherwise sit over the content
+    $('#addTopBtn').addEventListener('click', function () { openExpenseSheet(null); });
     $('#scrim').addEventListener('click', closeSheets);
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape' && !$('#scrim').hidden) closeSheets();

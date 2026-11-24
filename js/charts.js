@@ -14,6 +14,14 @@
     return node;
   }
 
+  /* Category names are typed by the person using the app, so anything that
+     reaches innerHTML goes through here first. */
+  function esc(s) {
+    return String(s === undefined || s === null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function niceMax(v) {
     if (!isFinite(v) || v <= 0) return 100;
     var exp = Math.floor(Math.log10(v));
@@ -221,5 +229,76 @@
     container.__ro = ro;
   }
 
-  global.Charts = { columns: columns, rankedBars: rankedBars, responsive: responsive };
+  /* A donut for the category split. Identity, not magnitude, so each slice
+     wears its own categorical hue in a fixed order - never cycled, never
+     reassigned when a filter changes the list. The names and amounts live in
+     the legend beside it, so the colours are never the only way to read it. */
+  function donut(container, opts) {
+    container.innerHTML = '';
+    var data = (opts.data || []).filter(function (d) { return d.total > 0; });
+    if (!data.length) return;
+
+    var total = data.reduce(function (n, d) { return n + d.total; }, 0);
+    if (total <= 0) return;
+
+    var SIZE = 200, R = 74, W = 26;
+    var C = 2 * Math.PI * R;
+    // a 2px surface gap between neighbours, in path units
+    var GAP = data.length > 1 ? 3 : 0;
+
+    var svg = el('svg', {
+      viewBox: '0 0 ' + SIZE + ' ' + SIZE,
+      class: 'donut-svg', role: 'img'
+    }, container);
+    svg.setAttribute('aria-label', opts.label || '');
+
+    var g = el('g', { transform: 'rotate(-90 ' + (SIZE / 2) + ' ' + (SIZE / 2) + ')' }, svg);
+    el('circle', {
+      cx: SIZE / 2, cy: SIZE / 2, r: R, fill: 'none',
+      'stroke-width': W, class: 'donut-track'
+    }, g);
+
+    var tip = tooltipFor(container);
+    var at = 0;
+    data.forEach(function (d, i) {
+      var frac = d.total / total;
+      var len = Math.max(0, frac * C - GAP);
+      var arc = el('circle', {
+        cx: SIZE / 2, cy: SIZE / 2, r: R, fill: 'none',
+        'stroke-width': W, 'stroke-linecap': 'butt',
+        'stroke-dasharray': len.toFixed(2) + ' ' + (C - len).toFixed(2),
+        'stroke-dashoffset': (-at * C).toFixed(2),
+        class: 'donut-arc', 'data-slot': String((i % 8) + 1),
+        tabindex: '0', role: 'img'
+      }, g);
+      var reading = d.name + ' — ' + opts.fmt(d.total) + ' (' + Math.round(frac * 100) + '%)';
+      arc.setAttribute('aria-label', reading);
+
+      function show(ev) {
+        var box = container.getBoundingClientRect();
+        var px = (ev && ev.clientX ? ev.clientX - box.left : box.width / 2);
+        var py = (ev && ev.clientY ? ev.clientY - box.top : box.height / 2);
+        showTip(container, tip, '<b>' + esc(d.name) + '</b><br>' +
+          esc(opts.fmt(d.total)) + ' · ' + Math.round(frac * 100) + '%', px, py);
+      }
+      arc.addEventListener('mousemove', show);
+      arc.addEventListener('mouseenter', show);
+      arc.addEventListener('focus', show);
+      arc.addEventListener('mouseleave', function () { tip.hidden = true; });
+      arc.addEventListener('blur', function () { tip.hidden = true; });
+
+      at += frac;
+    });
+
+    if (opts.centreValue) {
+      var mid = document.createElement('div');
+      mid.className = 'donut-mid';
+      mid.innerHTML = '<span class="donut-total"></span><span class="donut-label"></span>';
+      mid.querySelector('.donut-total').textContent = opts.centreValue;
+      mid.querySelector('.donut-label').textContent = opts.centreLabel || '';
+      container.appendChild(mid);
+    }
+  }
+
+  global.Charts = { columns: columns, rankedBars: rankedBars, donut: donut, responsive: responsive };
 })(window);

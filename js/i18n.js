@@ -8,6 +8,11 @@
     en: {
       'app.name': 'Expense Tracker',
       'app.tagline': 'Know what you can spend today',
+      'side.tagline': 'Track · Plan · Save',
+      'side.promoTitle': 'Stay in control of your money',
+      'side.promoSub': 'Track expenses, manage your budget and build better spending habits.',
+      'a11y.mainNav': 'Main',
+      'nav.dashboard': 'Dashboard',
       'nav.home': 'Home',
       'nav.history': 'History',
       'nav.settings': 'Settings',
@@ -27,6 +32,10 @@
       'a11y.deleteCat': 'Delete {name}',
 
       'home.heading': 'Dashboard',
+      'home.pageTitle': 'Your money, at a glance',
+      'home.pageSub': 'Track your spending, manage your budget and make smarter money decisions.',
+      'home.addExpense': 'Add expense',
+      'home.vsYesterday': '{pct} vs yesterday',
       'home.spentToday': 'Spent today',
       'home.noExpensesToday': 'No expenses yet today',
       'home.expensesToday.one': '{n} expense today',
@@ -78,6 +87,8 @@
       'cats.title': 'Where the money went',
       'cats.empty': 'Add an expense to see the split by category.',
       'cats.more': '+{count} in the table below.',
+      'cats.other': 'Others',
+      'cats.totalSpent': 'Total spent',
 
       'recent.title': 'Recent expenses',
       'recent.seeAll': 'See all',
@@ -232,6 +243,11 @@
     hi: {
       'app.name': 'एक्सपेंस ट्रैकर',
       'app.tagline': 'आज कितना खर्च कर सकते हैं, तुरंत पता',
+      'side.tagline': 'हिसाब · योजना · बचत',
+      'side.promoTitle': 'पैसा आपके कंट्रोल में',
+      'side.promoSub': 'खर्च का हिसाब रखें, बजट संभालें और बेहतर आदतें बनाएँ।',
+      'a11y.mainNav': 'मुख्य',
+      'nav.dashboard': 'डैशबोर्ड',
       'nav.home': 'होम',
       'nav.history': 'हिसाब',
       'nav.settings': 'सेटिंग',
@@ -251,6 +267,10 @@
       'a11y.deleteCat': '{name} डिलीट करें',
 
       'home.heading': 'डैशबोर्ड',
+      'home.pageTitle': 'एक नज़र में आपका पैसा',
+      'home.pageSub': 'खर्च पर नज़र रखें, बजट संभालें और पैसे के बेहतर फ़ैसले लें।',
+      'home.addExpense': 'खर्च जोड़ें',
+      'home.vsYesterday': 'कल से {pct}',
       'home.spentToday': 'आज का खर्च',
       'home.noExpensesToday': 'आज अभी कोई खर्च नहीं',
       'home.expensesToday.one': 'आज {n} खर्च',
@@ -302,6 +322,8 @@
       'cats.title': 'पैसा कहाँ गया',
       'cats.empty': 'कैटेगरी के हिसाब से देखने के लिए खर्च जोड़ें।',
       'cats.more': '+{count} नीचे टेबल में।',
+      'cats.other': 'अन्य',
+      'cats.totalSpent': 'कुल खर्च',
 
       'recent.title': 'हाल के खर्च',
       'recent.seeAll': 'सब देखें',

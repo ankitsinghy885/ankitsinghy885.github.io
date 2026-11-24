@@ -103,6 +103,7 @@ function fetchJson(url) {
 function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
 // demo data so the dashboard is not empty
+var THEME = process.argv[4] || 'dark';
 var SEED = `(function () {
   function day(back) {
     var d = new Date(); d.setDate(d.getDate() - back);
@@ -131,7 +132,7 @@ var SEED = `(function () {
     settings: {
       country: 'IN', currency: 'INR', lang: 'en', locale: 'en-IN',
       monthlyBudget: 20000, cycleStartDay: 1, limitMode: 'adaptive',
-      nearBudgetPct: 80, alerts: true, theme: 'dark', onboarded: true
+      nearBudgetPct: 80, alerts: true, theme: '${THEME}', onboarded: true
     },
     categories: cats.map(function (c) { return { id: c[0], name: c[1], icon: c[2] }; }),
     expenses: rows.map(function (r, i) {
@@ -149,7 +150,7 @@ function run() {
   if (!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive: true });
 
   var only = process.argv[2];
-  var view = process.argv[3] || 'home';     // home | history | settings
+  var view = process.argv[3] || 'home';     // home | history | settings | welcome
   var names = only ? [only] : Object.keys(SIZES);
   names.forEach(function (n) { if (!SIZES[n]) { console.error('unknown size: ' + n); process.exit(1); } });
   if (['home', 'history', 'settings', 'welcome'].indexOf(view) < 0) {

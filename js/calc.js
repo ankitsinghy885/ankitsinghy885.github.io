@@ -112,6 +112,19 @@
     }
   }
 
+  /** The span a cycle covers, spelled out: "1 Nov – 30 Nov 2026".
+      The year is left off the first date when both ends share it. */
+  function rangeText(range, locale) {
+    try {
+      var sameYear = range.start.getFullYear() === range.end.getFullYear();
+      var short = new Intl.DateTimeFormat(locale || undefined, { day: 'numeric', month: 'short' });
+      var full = new Intl.DateTimeFormat(locale || undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      return (sameYear ? short : full).format(range.start) + ' – ' + full.format(range.end);
+    } catch (e) {
+      return range.startKey + ' – ' + range.endKey;
+    }
+  }
+
   function dayLabel(key, locale, opts) {
     var d = parseKey(key);
     var tk = todayKey();
@@ -317,6 +330,7 @@
     cycleRange: cycleRange,
     cycleAt: cycleAt,
     cycleLabel: cycleLabel,
+    rangeText: rangeText,
     dayLabel: dayLabel,
     monthName: monthName,
     rangeTotal: rangeTotal,
