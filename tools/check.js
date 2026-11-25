@@ -436,6 +436,85 @@ eq('the limit survives a reload', Store.category('food').budget, 5000);
 Store.setCategoryBudget('food', -400);
 eq('a negative limit is treated as none', Store.category('food').budget, 0);
 
+// ---- comparing one cycle with the one before it ---------------------------
+section('cycle comparison');
+Store.hardReset();
+Store.setSettings({ country: 'IN', currency: 'INR', monthlyBudget: 30000, cycleStartDay: 1 });
+// November so far: two expenses in the first ten days
+Store.addExpense({ amount: 1000, categoryId: 'food', note: 'nov', date: '2026-11-03' });
+Store.addExpense({ amount: 500, categoryId: 'transport', note: 'nov', date: '2026-11-09' });
+// October: a little early, a lot late
+Store.addExpense({ amount: 800, categoryId: 'food', note: 'oct early', date: '2026-10-05' });
+Store.addExpense({ amount: 2000, categoryId: 'shopping', note: 'oct late', date: '2026-10-25' });
+
+const asOfNov10 = new Date(2026, 10, 10);   // ten days into November
+let cmp = Calc.cycleCompare(Store.get(), asOfNov10);
+
+eq('the cycle is still running', cmp.running, true);
+eq('ten days of it have passed', cmp.current.elapsed, 10);
+eq('spent so far this cycle', cmp.current.total, 1500);
+eq('the whole of last cycle', cmp.previous.total, 2800);
+eq('…but only its first ten days count as the comparison', cmp.previous.soFar, 800);
+eq('so the basis is the matching stretch, not the full month', cmp.basis, 800);
+eq('which makes this cycle the heavier one', cmp.direction, 'up');
+eq('by the difference between the two stretches', cmp.delta, 700);
+near('and that is 87.5% more', cmp.pct, 87.5);
+
+// The trap this guards against: 1500 against a finished 2800 reads as a 46%
+// fall, and the user is congratulated every month for being early in it.
+ok('a part cycle is never set against a whole one', cmp.delta > 0);
+
+// measured to the last day of November, the comparison is month against month
+const endOfNov = new Date(2026, 10, 30);
+cmp = Calc.cycleCompare(Store.get(), endOfNov);
+eq('on the final day the cycle counts as finished', cmp.running, false);
+eq('and the basis becomes the previous full total', cmp.basis, 2800);
+eq('which puts this cycle behind', cmp.direction, 'down');
+eq('by the whole-month difference', cmp.delta, -1300);
+
+// per-category movement, biggest mover first
+cmp = Calc.cycleCompare(Store.get(), asOfNov10);
+// biggest mover first, by how much it moved - not by how much it spent
+eq('the biggest move leads', cmp.categories[0].id, 'transport');
+eq('…by the whole of its new spend', cmp.categories[0].delta, 500);
+eq('food moved less, so it sits lower',
+  cmp.categories.filter((c) => c.id === 'food')[0].delta, 200);
+near('…a quarter more than the same stretch last cycle',
+  cmp.categories.filter((c) => c.id === 'food')[0].pct, 25);
+eq('transport is new this cycle',
+  cmp.categories.filter((c) => c.id === 'transport')[0].before, 0);
+eq('a brand new category has no percentage to report',
+  cmp.categories.filter((c) => c.id === 'transport')[0].pct, null);
+ok('a late-October category is outside the matching stretch',
+  cmp.categories.filter((c) => c.id === 'shopping').length === 0);
+
+// a category that has stopped entirely still shows up, at zero
+cmp = Calc.cycleCompare(Store.get(), endOfNov);
+const gone = cmp.categories.filter((c) => c.id === 'shopping')[0];
+ok('a category dropped this cycle is still reported', !!gone);
+eq('…with nothing spent on it now', gone.now, 0);
+eq('…and the whole of last cycle as the fall', gone.delta, -2000);
+
+// nothing to compare against
+Store.hardReset();
+Store.setSettings({ cycleStartDay: 1 });
+Store.addExpense({ amount: 300, categoryId: 'food', note: 'first ever', date: '2026-11-04' });
+cmp = Calc.cycleCompare(Store.get(), asOfNov10);
+eq('a first month has no previous cycle', cmp.hasPrevious, false);
+eq('and no percentage can be stated', cmp.pct, null);
+eq('though the rise is still real', cmp.delta, 300);
+
+// an identical stretch is flat, not a rounding error
+Store.addExpense({ amount: 300, categoryId: 'food', note: 'same again', date: '2026-10-04' });
+cmp = Calc.cycleCompare(Store.get(), asOfNov10);
+eq('same spend, same answer', cmp.direction, 'flat');
+eq('no difference either way', cmp.delta, 0);
+eq('zero percent, not null, because there was something to divide by', cmp.pct, 0);
+
+// a 31-day cycle compared with a 30-day one must not read past its end
+cmp = Calc.cycleCompare(Store.get(), new Date(2026, 11, 31));   // 31 December
+eq('the matching stretch stops at the shorter cycle', cmp.previous.soFarKey, '2026-11-30');
+
 // ---- backups cannot quietly destroy anything ------------------------------
 section('backup safety');
 Store.hardReset();

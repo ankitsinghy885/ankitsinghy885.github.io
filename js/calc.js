@@ -316,6 +316,88 @@
     }).sort(function (a, b) { return b.pct - a.pct; });
   }
 
+  /** This cycle measured against the one before it.
+
+      A cycle that is still running cannot be set against a finished one and
+      called a comparison: on the 5th you would be told you are spending 80%
+      less every single month. So the figure that drives the verdict is the
+      same stretch of the previous cycle - its first `elapsed` days - while the
+      previous cycle's full total is reported alongside it.
+
+      `pct` is null when there is nothing to divide by; a jump from zero has no
+      honest percentage. */
+  function cycleCompare(state, ref) {
+    var startDay = state.settings.cycleStartDay;
+    var now = ref || today();
+    var cur = cycleRange(now, startDay);
+    var prev = cycleAt(now, startDay, -1);
+
+    // `ref` is the moment the cycle is measured up to, and it always falls
+    // inside `cur`. The cycle is still running when that moment is short of
+    // its last day; pass the final day to compare a finished cycle in full.
+    var elapsed = daysBetween(cur.start, now) + 1;
+    var running = elapsed < cur.days;
+    // the matching stretch of the previous cycle, never running past its end
+    var span = clamp(elapsed, 1, prev.days);
+    var prevSoFarKey = dateKey(addDays(prev.start, span - 1));
+
+    var curTotal = rangeTotal(state.expenses, cur.startKey, cur.endKey);
+    var prevTotal = rangeTotal(state.expenses, prev.startKey, prev.endKey);
+    var prevSoFar = rangeTotal(state.expenses, prev.startKey, prevSoFarKey);
+
+    function countIn(a, b) {
+      return state.expenses.filter(function (e) { return inRange(e.date, a, b); }).length;
+    }
+    var prevCount = countIn(prev.startKey, prev.endKey);
+
+    // compare like with like: part-cycle against part-cycle
+    var basis = running ? prevSoFar : prevTotal;
+    var delta = curTotal - basis;
+
+    // every category that shows up in either window, biggest move first
+    var nowBy = {}, beforeBy = {};
+    state.expenses.forEach(function (e) {
+      if (inRange(e.date, cur.startKey, cur.endKey)) {
+        nowBy[e.categoryId] = (nowBy[e.categoryId] || 0) + e.amount;
+      }
+      if (inRange(e.date, prev.startKey, running ? prevSoFarKey : prev.endKey)) {
+        beforeBy[e.categoryId] = (beforeBy[e.categoryId] || 0) + e.amount;
+      }
+    });
+    var ids = Object.keys(nowBy);
+    Object.keys(beforeBy).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); });
+    var categories = ids.map(function (id) {
+      var c = global.Store ? global.Store.category(id) : { id: id, name: id, icon: "✨" };
+      var a = nowBy[id] || 0;
+      var b = beforeBy[id] || 0;
+      return {
+        id: id, name: c.name, icon: c.icon,
+        now: a, before: b, delta: a - b,
+        pct: b > 0 ? ((a - b) / b) * 100 : null
+      };
+    }).sort(function (x, y) { return Math.abs(y.delta) - Math.abs(x.delta); });
+
+    return {
+      current: {
+        range: cur, total: curTotal,
+        count: countIn(cur.startKey, cur.endKey),
+        elapsed: elapsed
+      },
+      previous: {
+        range: prev, total: prevTotal, count: prevCount,
+        soFar: prevSoFar, soFarKey: prevSoFarKey
+      },
+      running: running,
+      basis: basis,
+      delta: delta,
+      pct: basis > 0 ? (delta / basis) * 100 : null,
+      direction: delta > 0 ? "up" : (delta < 0 ? "down" : "flat"),
+      // nothing was tracked last cycle, so there is no comparison to make
+      hasPrevious: prevCount > 0,
+      categories: categories
+    };
+  }
+
   /** Expenses in a range grouped by date, newest day first. */
   function groupByDay(expenses, startKey, endKey, filter) {
     var groups = {};
@@ -367,6 +449,7 @@
     cycleDays: cycleDays,
     categoryBreakdown: categoryBreakdown,
     categoryBudgets: categoryBudgets,
+    cycleCompare: cycleCompare,
     groupByDay: groupByDay,
     oldestCycleOffset: oldestCycleOffset
   };
