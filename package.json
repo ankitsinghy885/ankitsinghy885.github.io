@@ -8,8 +8,14 @@
     "deploy": "node tools/build-deploy.js",
     "icons": "node tools/gen-icons.js",
     "standalone": "node tools/build-standalone.js",
-    "check": "node tools/check.js"
+    "check": "node tools/check.js",
+    "check:ui": "node tools/ui-check.js"
   },
-  "keywords": ["expense-tracker", "budget", "pwa", "offline"],
+  "keywords": [
+    "expense-tracker",
+    "budget",
+    "pwa",
+    "offline"
+  ],
   "license": "MIT"
 }

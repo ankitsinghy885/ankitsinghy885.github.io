@@ -230,6 +230,26 @@ button { cursor: pointer; }
 .detect-title { display: block; font-size: 0.875rem; font-weight: 650; }
 .detect-sub { display: block; font-size: 0.6875rem; color: var(--ink-muted); }
 
+/* A choice inside a sheet: one tap, one outcome, and the destructive one
+   carries its own colour so it is never the one you hit by reflex. */
+.choice {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 13px 14px; min-height: 62px; margin-bottom: 10px;
+  border: 1px solid var(--hairline); border-radius: 14px;
+  background: var(--surface); color: var(--ink);
+}
+.choice:active { background: var(--surface-2); }
+.choice-icon { color: var(--series); font-size: 1.25rem; line-height: 1; }
+.choice-title { display: block; font-size: 0.9375rem; font-weight: 650; }
+.choice-sub {
+  display: block; margin-top: 2px;
+  font-size: 0.75rem; line-height: 1.45; color: var(--ink-muted);
+}
+.choice-danger { border-color: color-mix(in srgb, var(--critical) 45%, var(--hairline)); }
+.choice-danger .choice-icon { color: var(--critical); }
+.choice-danger .choice-title { color: var(--critical-text); }
+.choice-danger:active { background: color-mix(in srgb, var(--critical) 10%, var(--surface)); }
+
 /* ── layout ──────────────────────────────────────────────── */
 #main {
   max-width: 560px; margin: 0 auto;

@@ -99,7 +99,8 @@ Iska matlab: browser ka data clear karoge ya app uninstall karoge to expenses ch
 ```bash
 npm start          # local server (http://localhost:5173)
 npm run deploy     # dist/ folder banao — yahi hosting pe upload karna hai
-npm run check      # saari calculations ke tests (91 checks)
+npm run check      # saari calculations ke tests (226 checks)
+npm run check:ui   # asli browser mein currency aur backup flows (26 checks)
 npm run icons      # app icons dobara banao
 npm run standalone # single-file build
 ```
@@ -117,6 +118,7 @@ js/app.js               screens, forms, sheets
 sw.js                   offline cache (service worker)
 manifest.webmanifest    install/home-screen settings
 tools/check.js          logic tests
+tools/ui-check.js       browser tests (headless Chrome)
 ```
 
 ## 📦 Play Store pe launch karna hai?

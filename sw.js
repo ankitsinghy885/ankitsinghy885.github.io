@@ -1,5 +1,5 @@
 /* sw.js - offline app shell. Bump CACHE when any shell file changes. */
-var CACHE = 'expense-tracker-v20';
+var CACHE = 'expense-tracker-v21';
 var SHELL = [
   './',
   'index.html',

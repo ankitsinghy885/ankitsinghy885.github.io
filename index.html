@@ -446,6 +446,35 @@
 </section>
 
 <!-- ───────────────────────── WELCOME ───────────────────────── -->
+<!-- ────────────── RESTORE A BACKUP ────────────── -->
+<section class="sheet" id="importSheet" role="dialog" aria-modal="true" aria-labelledby="importTitle" hidden>
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <h2 class="sheet-title" id="importTitle" data-i18n="import.title">Restore backup</h2>
+    <button type="button" class="icon-btn" data-close-sheet data-i18n-aria="a11y.close">&times;</button>
+  </div>
+  <div class="sheet-body">
+    <p class="sheet-hint" id="importSummary"></p>
+    <button type="button" class="choice" id="importMerge">
+      <span class="choice-icon" aria-hidden="true">&plus;</span>
+      <span>
+        <span class="choice-title" data-i18n="import.merge">Add to what I have</span>
+        <span class="choice-sub" data-i18n="import.mergeSub">Keeps everything here and skips anything already saved</span>
+      </span>
+    </button>
+    <button type="button" class="choice choice-danger" id="importReplace">
+      <span class="choice-icon" aria-hidden="true">&#9850;</span>
+      <span>
+        <span class="choice-title" data-i18n="import.replace">Replace everything</span>
+        <span class="choice-sub" id="importReplaceSub"></span>
+      </span>
+    </button>
+    <div class="sheet-actions">
+      <button type="button" class="btn btn-quiet" data-close-sheet data-i18n="sheet.cancel">Cancel</button>
+    </div>
+  </div>
+</section>
+
 <section class="sheet" id="welcomeSheet" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" hidden>
   <!-- decorative: everything it says is written again, translated, below it -->
   <img class="welcome-banner" id="welcomeBanner" src="img/welcome-banner.jpg" alt=""

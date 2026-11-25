@@ -150,15 +150,35 @@ var SEED = `(function () {
   localStorage.setItem('expense-tracker.v1', JSON.stringify(state));
 })();`;
 
+
+// Hand the app a backup file the way the user would, so the restore sheet
+// can be looked at without a human picking anything.
+var DROP_BACKUP = `(function () {
+  var payload = JSON.stringify({
+    app: 'daily-expense-tracker', v: 1, exportedAt: '2026-11-18T10:00:00.000Z',
+    settings: { currency: 'INR' }, categories: [],
+    expenses: [
+      { id: 'b1', date: '2026-11-12', amount: 450, categoryId: 'food', note: 'from backup' },
+      { id: 'b2', date: '2026-11-14', amount: 1200, categoryId: 'bills', note: 'from backup' },
+      { id: 'b3', date: '2026-11-15', amount: 260, categoryId: 'transport', note: 'from backup' }
+    ]
+  });
+  var file = new File([payload], 'expense-tracker-backup-2026-11-18.json', { type: 'application/json' });
+  var dt = new DataTransfer();
+  dt.items.add(file);
+  var input = document.getElementById('importFile');
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+})();`;
 function run() {
   if (!CHROME) { console.error('No Chrome or Edge found. Set CHROME_PATH.'); process.exit(1); }
   if (!fs.existsSync(OUT)) fs.mkdirSync(OUT, { recursive: true });
 
   var only = process.argv[2];
-  var view = process.argv[3] || 'home';     // home | history | settings | welcome
+  var view = process.argv[3] || 'home';     // home | history | settings | welcome | import
   var names = only ? [only] : Object.keys(SIZES);
   names.forEach(function (n) { if (!SIZES[n]) { console.error('unknown size: ' + n); process.exit(1); } });
-  if (['home', 'history', 'settings', 'welcome'].indexOf(view) < 0) {
+  if (['home', 'history', 'settings', 'welcome', 'import'].indexOf(view) < 0) {
     console.error('unknown view: ' + view); process.exit(1);
   }
 
@@ -232,9 +252,16 @@ function run() {
         .then(function () { return wait(1400); })
         .then(function () {
           if (view === 'home' || view === 'welcome') return null;
+          var tab = view === 'import' ? 'settings' : view;
           return cdp.send('Runtime.evaluate', {
-            expression: "document.querySelector('.tab[data-tab=\"" + view + "\"]').click(); scrollTo(0,0);"
+            expression: "document.querySelector('.tab[data-tab=\"" + tab + "\"]').click(); scrollTo(0,0);"
           }).then(function () { return wait(600); });
+        })
+        .then(function () {
+          if (view !== 'import') return null;
+          // the file is read asynchronously, so give the reader a moment
+          return cdp.send('Runtime.evaluate', { expression: DROP_BACKUP })
+            .then(function () { return wait(700); });
         })
         .then(function () {
           return cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });

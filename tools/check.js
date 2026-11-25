@@ -436,5 +436,90 @@ eq('the limit survives a reload', Store.category('food').budget, 5000);
 Store.setCategoryBudget('food', -400);
 eq('a negative limit is treated as none', Store.category('food').budget, 0);
 
+// ---- backups cannot quietly destroy anything ------------------------------
+section('backup safety');
+Store.hardReset();
+Store.setSettings({ country: 'IN', currency: 'INR', monthlyBudget: 20000, cycleStartDay: 1 });
+Store.addExpense({ amount: 400, categoryId: 'food', note: 'mine', date: '2026-11-02' });
+Store.addExpense({ amount: 900, categoryId: 'rent', note: 'mine too', date: '2026-11-03' });
+Store.save(true);
+const myBackup = Store.exportData();
+
+// a file that is not a backup must be refused before anything is touched
+function refuses(name, text) {
+  let threw = false;
+  try { Store.inspectBackup(text); } catch (e) { threw = true; }
+  ok(name, threw);
+}
+refuses('some other JSON object is not a backup', '{"foo":1}');
+refuses('a bare array is not a backup', '[1,2,3]');
+refuses('a JSON string is not a backup', '"hello"');
+refuses('null is not a backup', 'null');
+refuses('an object without expenses is not a backup',
+  JSON.stringify({ app: 'daily-expense-tracker', settings: {} }));
+
+// and the refusal must leave the data exactly where it was
+let blew = false;
+try { Store.importData('{"foo":1}', 'replace'); } catch (e) { blew = true; }
+ok('a replace with a non-backup throws', blew);
+eq('…and does not touch a single expense', Store.expenses().length, 2);
+
+// a real backup reports what is in it without applying anything
+const peek = Store.inspectBackup(myBackup);
+eq('the file is read without being applied', peek.count, 2);
+eq('and the store is untouched by the reading', Store.expenses().length, 2);
+eq('the currency inside the file is reported', peek.currency, 'INR');
+ok('so is when it was written', typeof peek.exportedAt === 'string');
+
+// unreadable rows are counted, not silently swallowed
+const messy = JSON.stringify({
+  app: 'daily-expense-tracker', v: 1, settings: {}, categories: [],
+  expenses: [{ date: '2026-11-05', amount: 100 }, { amount: 'nonsense' }, { date: '2026-11-06' }]
+});
+eq('rows that cannot be read are counted', Store.inspectBackup(messy).dropped, 2);
+eq('…and the readable one survives', Store.inspectBackup(messy).count, 1);
+
+// replacing keeps a way back
+const other = JSON.stringify({
+  app: 'daily-expense-tracker', v: 1, settings: { currency: 'USD' }, categories: [],
+  expenses: [{ id: 'x1', date: '2026-11-07', amount: 55, categoryId: 'food', note: 'theirs' }]
+});
+let res = Store.importData(other, 'replace');
+eq('the file takes over', Store.expenses().length, 1);
+eq('a restore point was kept', res.undo, true);
+eq('and it knows what it holds', Store.lastSnapshot().count, 2);
+eq('undo puts everything back', Store.undoLast(), true);
+eq('…all of it', Store.expenses().length, 2);
+eq('…including the amounts',
+  Store.expenses().filter((e) => e.note === 'mine')[0].amount, 400);
+eq('and the restore point is spent', Store.undoLast(), false);
+eq('so there is nothing left to report', Store.lastSnapshot(), null);
+
+// merging is additive, so it needs no restore point
+res = Store.importData(other, 'merge');
+eq('the incoming expense is added', res.added, 1);
+eq('alongside the ones already here', Store.expenses().length, 3);
+eq('a merge keeps no restore point', res.undo, false);
+eq('merging the same file twice adds nothing', Store.importData(other, 'merge').added, 0);
+eq('…and leaves the count alone', Store.expenses().length, 3);
+
+// wiping keeps a way back too
+eq('clearing reports that an undo was kept', Store.reset(), true);
+eq('every expense is gone', Store.expenses().length, 0);
+eq('the budget survives a clear', Store.settings().monthlyBudget, 20000);
+eq('undo brings them back', Store.undoLast(), true);
+eq('all three of them', Store.expenses().length, 3);
+
+// the restore point survives a reload, the way the user would meet it
+Store.reset();
+Store.save(true);
+Store.load();
+eq('a restore point outlives a reload', Store.lastSnapshot().count, 3);
+eq('and still works afterwards', Store.undoLast(), true);
+eq('with everything in it', Store.expenses().length, 3);
+
+ok('storage has room for a restore point', Store.hasRoom() === true);
+eq('probing for room leaves no restore point behind', Store.lastSnapshot(), null);
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

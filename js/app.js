@@ -32,6 +32,7 @@
     chartRange: 7,
     cycleOffset: 0,
     editingId: null,
+    pendingBackup: null,   // a validated backup waiting on merge-or-replace
     lastDayKey: Calc.todayKey(),
     limitHidden: true,          // the daily limit starts covered on every launch
     pickerTarget: 'settings',
@@ -254,7 +255,7 @@
     var sheet = $(id);
     sheet.hidden = false;
     document.body.classList.add('is-locked');
-    var first = sheet.querySelector('input:not([type="hidden"]), button.pick-item, select');
+    var first = sheet.querySelector('input:not([type="hidden"]), button.pick-item, button.choice, select');
     if (first && !/iPhone|iPad|Android/i.test(navigator.userAgent)) {
       try { first.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
     }
@@ -997,6 +998,19 @@
   }
 
   function pickCurrency(cc, cur, message) {
+    // Amounts are stored as bare numbers. Switching currency relabels every
+    // one of them without converting anything, so 5000 rupees silently reads
+    // as 5000 dollars. Say that plainly before it happens.
+    var had = Store.expenses().length;
+    var old = Store.settings().currency;
+    if (had && cur !== old) {
+      var ok = global.confirm(t('confirm.currency', {
+        count: tc('count.expense', had),
+        old: old + ' ' + Cur.symbolOf(old),
+        'new': cur + ' ' + Cur.symbolOf(cur)
+      }));
+      if (!ok) { closeSheets(); return; }
+    }
     if (cc) Store.setSettings({ country: cc, currency: cur });
     else Store.setSettings({ currency: cur, country: null });
     closeSheets();
@@ -1045,6 +1059,34 @@
     });
     download('expenses-' + Calc.todayKey() + '.csv', '﻿' + out.join('\n'), 'text/csv;charset=utf-8');
     toast(t('toast.csv'));
+  }
+
+  /** Show what is in the backup, then let the user pick what happens to it.
+      Nothing is written until one of the two buttons is pressed. */
+  function openImport(info) {
+    ui.pendingBackup = info;
+    var mine = Store.expenses().length;
+    var when = info.exportedAt ? dayLabel(info.exportedAt.slice(0, 10), { plain: true }) : '';
+    var lines = [
+      when ? t('import.foundOn', { count: tc('count.expense', info.count), date: when })
+           : t('import.found', { count: tc('count.expense', info.count) }),
+      t('import.yours', { count: tc('count.expense', mine) })
+    ];
+    if (info.dropped > 0) lines.push(t('import.dropped', { n: info.dropped }));
+    $('#importSummary').textContent = lines.join(' ');
+    // promise an undo only where there is room to keep one
+    $('#importReplaceSub').textContent =
+      t(Store.hasRoom() ? 'import.replaceSub' : 'import.replaceSubNoUndo',
+        { count: tc('count.expense', mine) });
+    openSheet('#importSheet');
+  }
+
+  /** Report a destructive step, with a way back when one was kept. */
+  function offerUndo(undoKept, message) {
+    if (!undoKept) { toast(message + " · " + t('toast.noUndo')); return; }
+    toast(message, t('toast.undo'), function () {
+      toast(Store.undoLast() ? t('toast.undone') : t('toast.undoGone'));
+    });
   }
 
   // ── wiring ───────────────────────────────────────────────
@@ -1227,9 +1269,10 @@
       var reader = new FileReader();
       reader.onload = function () {
         try {
-          var merge = global.confirm(t('confirm.import'));
-          var res = Store.importData(String(reader.result), merge ? 'merge' : 'replace');
-          toast(merge ? t('toast.imported', { count: tc('count.expense', res.added) }) : t('toast.restored'));
+          // Look inside before anything is touched, so the choice below can
+          // name real numbers and a file that is not a backup is refused here
+          // rather than quietly emptying the store.
+          openImport(Store.inspectBackup(String(reader.result)));
         } catch (e) {
           toast(t('toast.importFail'));
         }
@@ -1237,10 +1280,23 @@
       reader.readAsText(file);
       this.value = '';
     });
+    $('#importMerge').addEventListener('click', function () {
+      if (!ui.pendingBackup) return;
+      var res = Store.importData(ui.pendingBackup.data, 'merge');
+      ui.pendingBackup = null;
+      closeSheets();
+      toast(t('toast.imported', { count: tc('count.expense', res.added) }));
+    });
+    $('#importReplace').addEventListener('click', function () {
+      if (!ui.pendingBackup) return;
+      var res = Store.importData(ui.pendingBackup.data, 'replace');
+      ui.pendingBackup = null;
+      closeSheets();
+      offerUndo(res.undo, t('toast.restored'));
+    });
     $('#clearData').addEventListener('click', function () {
       if (!global.confirm(t('confirm.clear'))) return;
-      Store.reset();
-      toast(t('toast.cleared'));
+      offerUndo(Store.reset(), t('toast.cleared'));
     });
 
     $('#welcomeForm').addEventListener('submit', function (ev) {

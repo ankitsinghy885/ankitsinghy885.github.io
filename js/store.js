@@ -3,6 +3,8 @@
   'use strict';
 
   var KEY = 'expense-tracker.v1';
+  // One restore point, written just before anything destructive happens.
+  var SNAP_KEY = 'expense-tracker.v1.undo';
   var LEGACY_KEYS = [];
 
   var DEFAULT_CATEGORIES = [
@@ -240,6 +242,69 @@
     return cat;
   }
 
+  // ---- restore point -------------------------------------------------------
+
+  /** Copy the data as it stands right now, so the next destructive step can
+      be taken back. Only the latest copy is kept. Returns false when there is
+      no room for it (quota, private browsing) - the caller must then say so
+      rather than promise an undo that will not work. */
+  function snapshot(reason) {
+    try {
+      global.localStorage.setItem(SNAP_KEY, JSON.stringify({
+        at: new Date().toISOString(),
+        reason: reason || "",
+        count: state.expenses.length,
+        data: { v: 1, settings: state.settings, categories: state.categories, expenses: state.expenses }
+      }));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /** Whether a restore point of the current size would fit, without touching
+      the one already held - probing by overwriting it would throw away a real
+      undo to answer a hypothetical question. */
+  function hasRoom() {
+    var probe = KEY + ".probe";
+    try {
+      global.localStorage.setItem(probe, JSON.stringify(state));
+      global.localStorage.removeItem(probe);
+      return true;
+    } catch (e) {
+      try { global.localStorage.removeItem(probe); } catch (e2) { /* ignore */ }
+      return false;
+    }
+  }
+
+  function readSnapshot() {
+    try {
+      var raw = global.localStorage.getItem(SNAP_KEY);
+      if (!raw) return null;
+      var snap = JSON.parse(raw);
+      return snap && snap.data && Array.isArray(snap.data.expenses) ? snap : null;
+    } catch (e) { return null; }
+  }
+
+  /** What is in the restore point, without applying it. */
+  function lastSnapshot() {
+    var snap = readSnapshot();
+    if (!snap) return null;
+    return { at: snap.at, reason: snap.reason, count: snap.data.expenses.length };
+  }
+
+  /** Put the restore point back and clear it. */
+  function undoLast() {
+    var snap = readSnapshot();
+    if (!snap) return false;
+    state = migrate(snap.data);
+    try { global.localStorage.removeItem(SNAP_KEY); } catch (e) { /* ignore */ }
+    commit();
+    return true;
+  }
+
+  function dropSnapshot() {
+    try { global.localStorage.removeItem(SNAP_KEY); } catch (e) { /* ignore */ }
+  }
+
   function exportData() {
     return JSON.stringify({
       app: 'daily-expense-tracker', v: 1, exportedAt: new Date().toISOString(),
@@ -247,11 +312,32 @@
     }, null, 2);
   }
 
-  /** Import a JSON backup. mode: 'replace' | 'merge'. Returns {added, total}. */
-  function importData(json, mode) {
+  /** Read a backup without applying it, so the user can be told what is in the
+      file before any of their own data is touched. Throws if it is not one. */
+  function inspectBackup(json) {
     var data = typeof json === 'string' ? JSON.parse(json) : json;
-    if (!data || typeof data !== 'object') throw new Error('Not a valid backup file');
-    var incoming = migrate(data);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('Not a valid backup file');
+    }
+    // Every backup this app writes carries an expenses array. Without one it is
+    // some other JSON file, and migrate() would quietly turn it into an empty
+    // store - which, on a replace, reads as "all your data is gone".
+    if (!Array.isArray(data.expenses)) throw new Error('Not a valid backup file');
+    var clean = migrate(data);
+    return {
+      data: clean,
+      count: clean.expenses.length,
+      categories: clean.categories.length,
+      currency: clean.settings.currency,
+      exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : null,
+      dropped: data.expenses.length - clean.expenses.length
+    };
+  }
+
+  /** Import a JSON backup. mode: 'replace' | 'merge'.
+      Returns {added, total, undo} - undo says whether a restore point was kept. */
+  function importData(json, mode) {
+    var incoming = inspectBackup(json).data;
     if (mode === 'merge') {
       var seen = {};
       state.expenses.forEach(function (e) { seen[e.date + '|' + e.amount + '|' + e.note + '|' + e.categoryId] = true; });
@@ -264,23 +350,31 @@
         if (!state.categories.some(function (x) { return x.id === c.id; })) state.categories.push(c);
       });
       commit();
-      return { added: added, total: state.expenses.length };
+      return { added: added, total: state.expenses.length, undo: false };
     }
+    // A replace throws away everything that is here. Keep a way back.
+    var undo = snapshot('restore');
     state = incoming;
     commit();
-    return { added: state.expenses.length, total: state.expenses.length };
+    return { added: state.expenses.length, total: state.expenses.length, undo: undo };
   }
 
+  /** Wipe the expenses, keeping settings. Returns whether an undo was kept. */
   function reset() {
+    var undo = snapshot('clear');
     var keepSettings = Object.assign({}, state.settings);
     state = defaults();
     state.settings = keepSettings;
     state.settings.onboarded = true;
     commit();
+    return undo;
   }
 
   function hardReset() {
-    try { global.localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    try {
+      global.localStorage.removeItem(KEY);
+      global.localStorage.removeItem(SNAP_KEY);
+    } catch (e) { /* ignore */ }
     state = defaults();
     commit();
   }
@@ -303,6 +397,12 @@
     deleteCategory: deleteCategory,
     exportData: exportData,
     importData: importData,
+    inspectBackup: inspectBackup,
+    snapshot: snapshot,
+    hasRoom: hasRoom,
+    lastSnapshot: lastSnapshot,
+    undoLast: undoLast,
+    dropSnapshot: dropSnapshot,
     reset: reset,
     hardReset: hardReset,
     save: save,
