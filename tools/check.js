@@ -368,5 +368,73 @@ Store.load();
 eq('state survives a reload', Store.expenses().length, n);
 eq('settings survive a reload', Store.settings().monthlyBudget, 30000);
 
+
+// ---- per-category limits ---------------------------------------------------
+section('category budgets');
+// a clean slate: earlier sections left plenty of food and transport behind
+Store.hardReset();
+Store.setSettings({ country: 'IN', currency: 'INR', monthlyBudget: 30000, cycleStartDay: 1, nearBudgetPct: 80 });
+Store.addExpense({ amount: 4200, categoryId: 'food', note: 'eating out', date: '2026-11-10' });
+Store.addExpense({ amount: 1500, categoryId: 'groceries', note: 'weekly', date: '2026-11-11' });
+Store.addExpense({ amount: 3400, categoryId: 'shopping', note: 'jacket', date: '2026-11-12' });
+Store.addExpense({ amount: 250, categoryId: 'transport', note: 'bus', date: '2026-11-12' });
+
+const span = { a: '2026-11-01', b: '2026-11-30' };
+let cb = Calc.categoryBudgets(Store.get(), span.a, span.b, 80);
+eq('no limits set, so nothing to report', cb.length, 0);
+
+Store.setCategoryBudget('food', 5000);       // 4200 -> 84%, warning
+Store.setCategoryBudget('groceries', 3000);  // 1500 -> 50%, good
+Store.setCategoryBudget('shopping', 3000);   // 3400 -> 113%, over
+// transport is left without a limit on purpose
+
+cb = Calc.categoryBudgets(Store.get(), span.a, span.b, 80);
+eq('only the categories carrying a limit appear', cb.length, 3);
+eq('a category without a limit is left out',
+  cb.filter((r) => r.id === 'transport').length, 0);
+
+eq('worst sits on top', cb[0].id, 'shopping');
+eq('…then the one near its limit', cb[1].id, 'food');
+eq('…and the comfortable one last', cb[2].id, 'groceries');
+
+const food = cb.filter((r) => r.id === 'food')[0];
+eq('spent against the limit', food.spent, 4200);
+eq('the limit itself', food.budget, 5000);
+eq('what is left', food.left, 800);
+near('share of the limit used', food.pct, 84, 0.01);
+eq('past the warning mark', food.status, 'warning');
+
+const shop = cb.filter((r) => r.id === 'shopping')[0];
+eq('over spends past the limit', shop.status, 'over');
+ok('…and goes negative on what is left', shop.left < 0, shop.left);
+
+eq('well inside the limit stays quiet', cb.filter((r) => r.id === 'groceries')[0].status, 'good');
+
+// the warning mark follows the setting, not a hard-coded 80
+eq('a stricter mark moves the line',
+  Calc.categoryBudgets(Store.get(), span.a, span.b, 50)
+    .filter((r) => r.id === 'groceries')[0].status, 'warning');
+eq('a looser one lets it pass',
+  Calc.categoryBudgets(Store.get(), span.a, span.b, 95)
+    .filter((r) => r.id === 'food')[0].status, 'good');
+
+// spending outside the cycle must not count against it
+Store.addExpense({ amount: 9000, categoryId: 'groceries', note: 'last month', date: '2026-10-20' });
+eq('an earlier month does not touch this one',
+  Calc.categoryBudgets(Store.get(), span.a, span.b, 80).filter((r) => r.id === 'groceries')[0].spent, 1500);
+
+// clearing a limit removes the row again
+Store.setCategoryBudget('shopping', 0);
+eq('a cleared limit drops out',
+  Calc.categoryBudgets(Store.get(), span.a, span.b, 80).filter((r) => r.id === 'shopping').length, 0);
+
+// a limit survives a reload, and rubbish in the field does not
+Store.setCategoryBudget('food', 5000);
+Store.save(true);
+Store.load();
+eq('the limit survives a reload', Store.category('food').budget, 5000);
+Store.setCategoryBudget('food', -400);
+eq('a negative limit is treated as none', Store.category('food').budget, 0);
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

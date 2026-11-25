@@ -290,6 +290,32 @@
     }).sort(function (a, b) { return b.total - a.total; });
   }
 
+  /** The categories that carry a limit of their own, and how this cycle is
+      going against it. Worst first, so whatever needs attention is on top.
+      Categories without a limit are left out entirely. */
+  function categoryBudgets(state, startKey, endKey, nearPct) {
+    nearPct = clamp(Number(nearPct) || 80, 50, 99);
+    var spent = {};
+    state.expenses.forEach(function (e) {
+      if (!inRange(e.date, startKey, endKey)) return;
+      spent[e.categoryId] = (spent[e.categoryId] || 0) + e.amount;
+    });
+    return state.categories.filter(function (c) {
+      return Number(c.budget) > 0;
+    }).map(function (c) {
+      var used = spent[c.id] || 0;
+      var p = (used / c.budget) * 100;
+      return {
+        id: c.id, name: c.name, icon: c.icon,
+        budget: c.budget,
+        spent: used,
+        left: c.budget - used,
+        pct: p,
+        status: p >= 100 ? 'over' : (p >= nearPct ? 'warning' : 'good')
+      };
+    }).sort(function (a, b) { return b.pct - a.pct; });
+  }
+
   /** Expenses in a range grouped by date, newest day first. */
   function groupByDay(expenses, startKey, endKey, filter) {
     var groups = {};
@@ -340,6 +366,7 @@
     lastDays: lastDays,
     cycleDays: cycleDays,
     categoryBreakdown: categoryBreakdown,
+    categoryBudgets: categoryBudgets,
     groupByDay: groupByDay,
     oldestCycleOffset: oldestCycleOffset
   };

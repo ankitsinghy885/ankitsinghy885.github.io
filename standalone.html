@@ -764,9 +764,10 @@ body.is-locked { overflow: hidden; }
   #view-home > #alerts { grid-column: 1 / -1; grid-row: 3; }
   #view-home > .tiles { grid-column: 1 / -1; grid-row: 4; }
   #view-home > .budget-card { grid-column: 1 / -1; grid-row: 5; }
-  .home-col-a > * { grid-column: 1; grid-row: 6; }
-  .home-col-b > * { grid-column: 2; grid-row: 6; }
-  #view-home > .card:last-child { grid-column: 1 / -1; grid-row: 7; }
+  #view-home > .catbud-card { grid-column: 1 / -1; grid-row: 6; }
+  .home-col-a > * { grid-column: 1; grid-row: 7; }
+  .home-col-b > * { grid-column: 2; grid-row: 7; }
+  #view-home > .card:last-child { grid-column: 1 / -1; grid-row: 8; }
 
   /* five across on a wide screen, the way the row reads in one sweep */
   .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; }
@@ -1009,6 +1010,61 @@ body.is-locked { overflow: hidden; }
   .cat-list { gap: 13px; }
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   Category budgets
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* One row per category that carries a limit: who it is, where it stands, and
+   a bar underneath. The figures and the share are always written out, so the
+   bar's colour is never the only thing saying a limit is in trouble. */
+.catbud-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+.catbud {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center; column-gap: 9px; row-gap: 6px;
+}
+.catbud-ico { font-size: 1rem; }
+.catbud-name {
+  font-size: 0.8125rem; font-weight: 550;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.catbud-figures { font-size: 0.75rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.catbud-pct {
+  font-size: 0.75rem; font-weight: 650; font-variant-numeric: tabular-nums;
+  min-width: 3.4em; text-align: right;
+}
+.catbud-pct[data-state="over"] { color: var(--critical-text); }
+.catbud-track { grid-column: 1 / -1; }
+
+/* the editor in Settings: name on the left, its own limit on the right */
+.catset-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.catset {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 122px auto;
+  align-items: center; gap: 10px;
+}
+.catset-ico { font-size: 1.0625rem; }
+.catset-name {
+  font-size: 0.875rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.catset-amt .input-prefix { height: 40px; min-width: 28px; padding: 0 6px; font-size: 0.8125rem; }
+.catset-amt input { height: 40px; font-size: 0.875rem; }
+.catset > .x {
+  flex: none; width: 32px; height: 32px; border-radius: 10px;
+  border: 1px solid var(--hairline); background: var(--surface);
+  color: var(--ink-muted); font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.catset > .x:hover { color: var(--critical-text); border-color: var(--critical); }
+.catset > .x:focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
+
+@media (max-width: 420px) {
+  /* still one row on a narrow phone - the field and its gaps give up the
+     width instead, so a category never spreads over three lines */
+  .catset { grid-template-columns: auto minmax(0, 1fr) 92px auto; gap: 7px; }
+  .catset-amt .input-prefix { min-width: 22px; padding: 0 4px; }
+}
+
 </style>
 </head>
 <body>
@@ -1156,6 +1212,17 @@ body.is-locked { overflow: hidden; }
       <div class="budget-empty" id="budgetEmpty" hidden></div>
     </section>
 
+    <!-- only rendered once at least one category carries a limit of its own -->
+    <section class="card catbud-card" id="catBudCard" hidden>
+      <div class="card-head">
+        <span class="card-icon" data-icon="shield" data-hue="teal" aria-hidden="true"></span>
+        <h3 class="card-title" data-i18n="catbud.title">Category budgets</h3>
+        <span class="card-tag" id="catBudTag">&nbsp;</span>
+        <button type="button" class="link-btn" data-goto="settings" data-i18n="common.edit">Edit</button>
+      </div>
+      <ul class="catbud-list" id="catBudList"></ul>
+    </section>
+
     <!-- the only row that splits in two; everything else runs full width -->
     <div class="home-col home-col-a">
       <section class="card">
@@ -1297,7 +1364,8 @@ body.is-locked { overflow: hidden; }
 
     <section class="card">
       <h3 class="card-title" data-i18n="set.categories">Categories</h3>
-      <div id="catManage" class="chip-wrap"></div>
+      <p class="hint" data-i18n="set.catBudgetHint">Give a category its own monthly limit and the app warns you before it runs out. Leave it empty for no limit.</p>
+      <ul class="catset-list" id="catManage"></ul>
       <form class="row-form" id="catForm">
         <input type="text" id="catName" data-i18n-ph="set.newCategory" maxlength="30" autocomplete="off" data-i18n-aria="a11y.catName">
         <input type="text" id="catIcon" placeholder="&#127775;" maxlength="4" data-i18n-aria="a11y.catIcon" class="icon-input">
@@ -1497,6 +1565,7 @@ body.is-locked { overflow: hidden; }
       'a11y.chartRange': 'Chart range',
       'a11y.limitMode': 'How the daily limit is worked out',
       'a11y.deleteCat': 'Delete {name}',
+      'a11y.catBudget': 'Monthly limit for {name}',
 
       'home.heading': 'Dashboard',
       'home.pageTitle': 'Your money, at a glance',
@@ -1552,6 +1621,8 @@ body.is-locked { overflow: hidden; }
       'table.share': 'Share',
 
       'cats.title': 'Where the money went',
+      'catbud.title': 'Category budgets',
+      'catbud.of': '{spent} of {budget}',
       'cats.empty': 'Add an expense to see the split by category.',
       'cats.more': '+{count} in the table below.',
       'cats.other': 'Others',
@@ -1573,6 +1644,10 @@ body.is-locked { overflow: hidden; }
       'alert.nearLimit.title': 'Close to today’s limit',
       'alert.nearLimit.body': 'Only <b>{left}</b> left of today’s {limit}.',
       'alert.pace.title': 'This pace crosses the budget',
+      'alert.catOver.title': '{name} is past its limit',
+      'alert.catOver.body': '{over} over the {budget} you set for it.',
+      'alert.catNear.title': '{name} is at {pct} of its limit',
+      'alert.catNear.body': 'Only {left} left of the {budget} you set for it.',
       'alert.pace.body': 'At {avg}/day you would end the month near <b>{projected}</b> against a {budget} budget.',
 
       'hist.heading': 'History',
@@ -1640,6 +1715,7 @@ body.is-locked { overflow: hidden; }
       'set.warnAt': 'Warn me when the month reaches {pct} of the budget',
       'set.alertsOn': 'Show spending alerts',
       'set.categories': 'Categories',
+      'set.catBudgetHint': 'Give a category its own monthly limit and the app warns you before it runs out. Leave it empty for no limit.',
       'set.newCategory': 'New category',
       'set.add': 'Add',
       'set.appearance': 'Appearance',
@@ -1664,6 +1740,7 @@ body.is-locked { overflow: hidden; }
       'toast.savedLimitCrossed': 'Saved · today’s limit crossed by {amount}',
       'toast.savedLeft': 'Saved · {amount} left today',
       'toast.saved': 'Expense saved',
+      'toast.catBudgetSet': '{name} limit set to {amount}',
       'toast.catAdded': 'Category added',
       'toast.backup': 'Backup downloaded',
       'toast.csv': 'CSV exported',
@@ -1732,6 +1809,7 @@ body.is-locked { overflow: hidden; }
       'a11y.chartRange': 'चार्ट की अवधि',
       'a11y.limitMode': 'रोज़ की लिमिट कैसे निकले',
       'a11y.deleteCat': '{name} डिलीट करें',
+      'a11y.catBudget': '{name} की महीने की लिमिट',
 
       'home.heading': 'डैशबोर्ड',
       'home.pageTitle': 'एक नज़र में आपका पैसा',
@@ -1787,6 +1865,8 @@ body.is-locked { overflow: hidden; }
       'table.share': 'हिस्सा',
 
       'cats.title': 'पैसा कहाँ गया',
+      'catbud.title': 'कैटेगरी के बजट',
+      'catbud.of': '{budget} में से {spent}',
       'cats.empty': 'कैटेगरी के हिसाब से देखने के लिए खर्च जोड़ें।',
       'cats.more': '+{count} नीचे टेबल में।',
       'cats.other': 'अन्य',
@@ -1808,6 +1888,10 @@ body.is-locked { overflow: hidden; }
       'alert.nearLimit.title': 'आज की लिमिट के करीब',
       'alert.nearLimit.body': 'आज के {limit} में से सिर्फ़ <b>{left}</b> बचे हैं।',
       'alert.pace.title': 'इस रफ़्तार से बजट पार हो जाएगा',
+      'alert.catOver.title': '{name} की लिमिट पार हो गई',
+      'alert.catOver.body': 'आपकी तय की {budget} से {over} ज़्यादा।',
+      'alert.catNear.title': '{name} अपनी लिमिट के {pct} पर है',
+      'alert.catNear.body': 'आपकी तय की {budget} में से सिर्फ़ {left} बचे।',
       'alert.pace.body': '{avg}/दिन के हिसाब से महीना <b>{projected}</b> पर खत्म होगा, जबकि बजट {budget} है।',
 
       'hist.heading': 'हिसाब',
@@ -1875,6 +1959,7 @@ body.is-locked { overflow: hidden; }
       'set.warnAt': 'जब महीना बजट के {pct} पर पहुँचे तो चेतावनी दें',
       'set.alertsOn': 'खर्च की चेतावनी दिखाएँ',
       'set.categories': 'कैटेगरी',
+      'set.catBudgetHint': 'किसी कैटेगरी की अपनी महीने की लिमिट डालें, तो खत्म होने से पहले ऐप चेतावनी देगा। खाली छोड़ें तो कोई लिमिट नहीं।',
       'set.newCategory': 'नई कैटेगरी',
       'set.add': 'जोड़ें',
       'set.appearance': 'दिखावट',
@@ -1899,6 +1984,7 @@ body.is-locked { overflow: hidden; }
       'toast.savedLimitCrossed': 'सेव · आज की लिमिट {amount} से पार',
       'toast.savedLeft': 'सेव · आज {amount} बचे हैं',
       'toast.saved': 'खर्च सेव हो गया',
+      'toast.catBudgetSet': '{name} की लिमिट {amount} सेट हुई',
       'toast.catAdded': 'कैटेगरी जुड़ गई',
       'toast.backup': 'बैकअप डाउनलोड हो गया',
       'toast.csv': 'CSV एक्सपोर्ट हो गया',
@@ -2375,7 +2461,7 @@ body.is-locked { overflow: hidden; }
         theme: 'auto',           // 'auto' | 'light' | 'dark'
         onboarded: false
       },
-      categories: DEFAULT_CATEGORIES.map(function (c) { return { id: c.id, name: c.name, icon: c.icon }; }),
+      categories: DEFAULT_CATEGORIES.map(function (c) { return { id: c.id, name: c.name, icon: c.icon, budget: 0 }; }),
       expenses: []               // {id, amount, categoryId, note, date:'YYYY-MM-DD', createdAt}
     };
   }
@@ -2411,6 +2497,18 @@ body.is-locked { overflow: hidden; }
     out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 30, 1);
     out.settings.nearBudgetPct = clampInt(out.settings.nearBudgetPct, 50, 99, 80);
     out.settings.monthlyBudget = Math.max(0, Number(out.settings.monthlyBudget) || 0);
+    // a category may carry its own monthly limit; 0 means it has none
+    out.categories = out.categories.filter(function (c) {
+      return c && typeof c.id === 'string' && c.id;
+    }).map(function (c) {
+      return {
+        id: c.id,
+        name: typeof c.name === 'string' && c.name ? c.name : c.id,
+        icon: typeof c.icon === 'string' && c.icon ? c.icon : '✨',
+        budget: Math.max(0, Number(c.budget) || 0)
+      };
+    });
+    if (!out.categories.length) out.categories = base.categories;
     if (global.Currencies) {
       out.settings.locale = global.Currencies.localeFor(out.settings.country, out.settings.lang);
     }
@@ -2530,7 +2628,7 @@ body.is-locked { overflow: hidden; }
     if (!name) return null;
     var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || uid();
     if (state.categories.some(function (c) { return c.id === id; })) id = id + '-' + uid().slice(-3);
-    var cat = { id: id, name: name, icon: icon || '🏷️' };
+    var cat = { id: id, name: name, icon: icon || '🏷️', budget: 0 };
     state.categories.push(cat);
     commit();
     return cat;
@@ -2546,7 +2644,16 @@ body.is-locked { overflow: hidden; }
 
   function category(id) {
     return state.categories.filter(function (c) { return c.id === id; })[0] ||
-           { id: id, name: 'Other', icon: '✨' };
+           { id: id, name: 'Other', icon: '✨', budget: 0 };
+  }
+
+  /** Set (or clear, with 0) a category's own monthly limit. */
+  function setCategoryBudget(id, amount) {
+    var cat = state.categories.filter(function (c) { return c.id === id; })[0];
+    if (!cat) return null;
+    cat.budget = Math.max(0, Number(amount) || 0);
+    commit();
+    return cat;
   }
 
   function exportData() {
@@ -2608,6 +2715,7 @@ body.is-locked { overflow: hidden; }
     deleteExpense: deleteExpense,
     restoreExpense: restoreExpense,
     addCategory: addCategory,
+    setCategoryBudget: setCategoryBudget,
     deleteCategory: deleteCategory,
     exportData: exportData,
     importData: importData,
@@ -2913,6 +3021,32 @@ body.is-locked { overflow: hidden; }
     }).sort(function (a, b) { return b.total - a.total; });
   }
 
+  /** The categories that carry a limit of their own, and how this cycle is
+      going against it. Worst first, so whatever needs attention is on top.
+      Categories without a limit are left out entirely. */
+  function categoryBudgets(state, startKey, endKey, nearPct) {
+    nearPct = clamp(Number(nearPct) || 80, 50, 99);
+    var spent = {};
+    state.expenses.forEach(function (e) {
+      if (!inRange(e.date, startKey, endKey)) return;
+      spent[e.categoryId] = (spent[e.categoryId] || 0) + e.amount;
+    });
+    return state.categories.filter(function (c) {
+      return Number(c.budget) > 0;
+    }).map(function (c) {
+      var used = spent[c.id] || 0;
+      var p = (used / c.budget) * 100;
+      return {
+        id: c.id, name: c.name, icon: c.icon,
+        budget: c.budget,
+        spent: used,
+        left: c.budget - used,
+        pct: p,
+        status: p >= 100 ? 'over' : (p >= nearPct ? 'warning' : 'good')
+      };
+    }).sort(function (a, b) { return b.pct - a.pct; });
+  }
+
   /** Expenses in a range grouped by date, newest day first. */
   function groupByDay(expenses, startKey, endKey, filter) {
     var groups = {};
@@ -2963,6 +3097,7 @@ body.is-locked { overflow: hidden; }
     lastDays: lastDays,
     cycleDays: cycleDays,
     categoryBreakdown: categoryBreakdown,
+    categoryBudgets: categoryBudgets,
     groupByDay: groupByDay,
     oldestCycleOffset: oldestCycleOffset
   };
@@ -3629,6 +3764,26 @@ body.is-locked { overflow: hidden; }
         })));
     }
 
+    // a category with its own limit speaks for itself, worst first
+    Calc.categoryBudgets(Store.get(), sum.range.startKey, sum.range.endKey, s.nearBudgetPct)
+      .filter(function (r) { return r.status !== 'good'; })
+      .slice(0, 2)
+      .forEach(function (r) {
+        var name = catName(r);
+        if (r.status === 'over') {
+          out.push(alertHtml('critical', '!', t('alert.catOver.title', { name: name }),
+            t('alert.catOver.body', {
+              over: esc(m(Math.abs(r.left))), budget: esc(mInt(r.budget))
+            })));
+        } else {
+          out.push(alertHtml('serious', '!',
+            t('alert.catNear.title', { name: name, pct: pct(r.pct) }),
+            t('alert.catNear.body', {
+              left: esc(m(r.left)), budget: esc(mInt(r.budget))
+            })));
+        }
+      });
+
     host.innerHTML = out.slice(0, 3).join('');
   }
 
@@ -3759,6 +3914,7 @@ body.is-locked { overflow: hidden; }
 
     renderDailyChart(sum);
     renderCategories(sum);
+    renderCategoryBudgets(sum);
     renderRecent(state);
   }
 
@@ -3797,6 +3953,31 @@ body.is-locked { overflow: hidden; }
           return '<tr><td>' + esc(dayLabel(d.key)) + '</td><td class="num">' + esc(m(d.total)) + '</td></tr>';
         }).join('') + '</tbody></table>'
       : '<p class="meta">' + esc(t('chart.empty')) + '</p>';
+  }
+
+  /* Only the categories carrying a limit of their own, worst first. The card
+     stays hidden until at least one has one, so nobody who does not use this
+     ever sees an empty panel. */
+  function renderCategoryBudgets(sum) {
+    var s = Store.settings();
+    var card = $('#catBudCard');
+    var rows = Calc.categoryBudgets(Store.get(), sum.range.startKey, sum.range.endKey, s.nearBudgetPct);
+    if (!rows.length) { card.hidden = true; $('#catBudList').innerHTML = ''; return; }
+    card.hidden = false;
+    $('#catBudTag').textContent = tc('count.category', rows.length);
+    $('#catBudList').innerHTML = rows.map(function (r) {
+      var shown = Math.max(0, Math.min(100, r.pct));
+      return '<li class="catbud">' +
+        '<span class="catbud-ico" aria-hidden="true">' + esc(r.icon) + '</span>' +
+        '<span class="catbud-name">' + esc(catName(r)) + '</span>' +
+        '<span class="catbud-figures">' +
+          esc(t('catbud.of', { spent: m(r.spent), budget: mInt(r.budget) })) + '</span>' +
+        '<span class="catbud-pct" data-state="' + r.status + '">' + esc(pct(r.pct)) + '</span>' +
+        '<div class="meter-track catbud-track">' +
+          '<div class="meter-fill" data-state="' + r.status + '" style="width:' + shown + '%"></div>' +
+        '</div>' +
+        '</li>';
+    }).join('');
   }
 
   function renderCategories(sum) {
@@ -4020,10 +4201,22 @@ body.is-locked { overflow: hidden; }
     var ls = $('#langSelect');
     if (ls) ls.value = I18n.current();
 
+    var sym = Cur.symbolOf(s.currency);
     $('#catManage').innerHTML = Store.categories().map(function (c) {
-      return '<span class="chip">' + esc(catLabel(c)) +
+      var name = catName(c);
+      return '<li class="catset">' +
+        '<span class="catset-ico" aria-hidden="true">' + esc(c.icon) + '</span>' +
+        '<span class="catset-name">' + esc(name) + '</span>' +
+        '<span class="input-money catset-amt">' +
+          '<span class="input-prefix" aria-hidden="true">' + esc(sym) + '</span>' +
+          '<input type="number" inputmode="decimal" min="0" step="any" placeholder="0"' +
+            ' data-cat-budget="' + esc(c.id) + '"' +
+            ' value="' + (c.budget > 0 ? c.budget : '') + '"' +
+            ' aria-label="' + esc(t('a11y.catBudget', { name: name })) + '">' +
+        '</span>' +
         '<button type="button" class="x" data-del-cat="' + esc(c.id) + '" aria-label="' +
-        esc(t('a11y.deleteCat', { name: catName(c) })) + '">×</button></span>';
+          esc(t('a11y.deleteCat', { name: name })) + '">×</button>' +
+        '</li>';
     }).join('');
 
     $('#storageNote').textContent = Store.storageOk()
@@ -4406,6 +4599,22 @@ body.is-locked { overflow: hidden; }
       $('#nearPctLabel').textContent = t('set.warnAt', { pct: this.value + '%' });
       Store.setSettings({ nearBudgetPct: parseInt(this.value, 10) });
     });
+    // Category limits are typed straight into the list, so commit on change
+    // rather than on every keystroke - the dashboard re-renders each time.
+    $('#catManage').addEventListener('change', function (ev) {
+      var field = ev.target.closest('[data-cat-budget]');
+      if (!field) return;
+      var raw = field.value.trim();
+      var amount = raw === '' ? 0 : Math.max(0, Number(raw) || 0);
+      Store.setCategoryBudget(field.dataset.catBudget, amount);
+      if (amount > 0) {
+        toast(t('toast.catBudgetSet', {
+          name: catName(Store.category(field.dataset.catBudget)),
+          amount: mInt(amount)
+        }));
+      }
+    });
+
     $('#alertsOn').addEventListener('change', function () {
       Store.setSettings({ alerts: this.checked });
     });

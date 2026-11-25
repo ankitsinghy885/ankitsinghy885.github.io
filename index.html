@@ -160,6 +160,17 @@
       <div class="budget-empty" id="budgetEmpty" hidden></div>
     </section>
 
+    <!-- only rendered once at least one category carries a limit of its own -->
+    <section class="card catbud-card" id="catBudCard" hidden>
+      <div class="card-head">
+        <span class="card-icon" data-icon="shield" data-hue="teal" aria-hidden="true"></span>
+        <h3 class="card-title" data-i18n="catbud.title">Category budgets</h3>
+        <span class="card-tag" id="catBudTag">&nbsp;</span>
+        <button type="button" class="link-btn" data-goto="settings" data-i18n="common.edit">Edit</button>
+      </div>
+      <ul class="catbud-list" id="catBudList"></ul>
+    </section>
+
     <!-- the only row that splits in two; everything else runs full width -->
     <div class="home-col home-col-a">
       <section class="card">
@@ -301,7 +312,8 @@
 
     <section class="card">
       <h3 class="card-title" data-i18n="set.categories">Categories</h3>
-      <div id="catManage" class="chip-wrap"></div>
+      <p class="hint" data-i18n="set.catBudgetHint">Give a category its own monthly limit and the app warns you before it runs out. Leave it empty for no limit.</p>
+      <ul class="catset-list" id="catManage"></ul>
       <form class="row-form" id="catForm">
         <input type="text" id="catName" data-i18n-ph="set.newCategory" maxlength="30" autocomplete="off" data-i18n-aria="a11y.catName">
         <input type="text" id="catIcon" placeholder="&#127775;" maxlength="4" data-i18n-aria="a11y.catIcon" class="icon-input">

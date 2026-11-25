@@ -45,7 +45,7 @@
         theme: 'auto',           // 'auto' | 'light' | 'dark'
         onboarded: false
       },
-      categories: DEFAULT_CATEGORIES.map(function (c) { return { id: c.id, name: c.name, icon: c.icon }; }),
+      categories: DEFAULT_CATEGORIES.map(function (c) { return { id: c.id, name: c.name, icon: c.icon, budget: 0 }; }),
       expenses: []               // {id, amount, categoryId, note, date:'YYYY-MM-DD', createdAt}
     };
   }
@@ -81,6 +81,18 @@
     out.settings.cycleStartDay = clampInt(out.settings.cycleStartDay, 1, 30, 1);
     out.settings.nearBudgetPct = clampInt(out.settings.nearBudgetPct, 50, 99, 80);
     out.settings.monthlyBudget = Math.max(0, Number(out.settings.monthlyBudget) || 0);
+    // a category may carry its own monthly limit; 0 means it has none
+    out.categories = out.categories.filter(function (c) {
+      return c && typeof c.id === 'string' && c.id;
+    }).map(function (c) {
+      return {
+        id: c.id,
+        name: typeof c.name === 'string' && c.name ? c.name : c.id,
+        icon: typeof c.icon === 'string' && c.icon ? c.icon : '✨',
+        budget: Math.max(0, Number(c.budget) || 0)
+      };
+    });
+    if (!out.categories.length) out.categories = base.categories;
     if (global.Currencies) {
       out.settings.locale = global.Currencies.localeFor(out.settings.country, out.settings.lang);
     }
@@ -200,7 +212,7 @@
     if (!name) return null;
     var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || uid();
     if (state.categories.some(function (c) { return c.id === id; })) id = id + '-' + uid().slice(-3);
-    var cat = { id: id, name: name, icon: icon || '🏷️' };
+    var cat = { id: id, name: name, icon: icon || '🏷️', budget: 0 };
     state.categories.push(cat);
     commit();
     return cat;
@@ -216,7 +228,16 @@
 
   function category(id) {
     return state.categories.filter(function (c) { return c.id === id; })[0] ||
-           { id: id, name: 'Other', icon: '✨' };
+           { id: id, name: 'Other', icon: '✨', budget: 0 };
+  }
+
+  /** Set (or clear, with 0) a category's own monthly limit. */
+  function setCategoryBudget(id, amount) {
+    var cat = state.categories.filter(function (c) { return c.id === id; })[0];
+    if (!cat) return null;
+    cat.budget = Math.max(0, Number(amount) || 0);
+    commit();
+    return cat;
   }
 
   function exportData() {
@@ -278,6 +299,7 @@
     deleteExpense: deleteExpense,
     restoreExpense: restoreExpense,
     addCategory: addCategory,
+    setCategoryBudget: setCategoryBudget,
     deleteCategory: deleteCategory,
     exportData: exportData,
     importData: importData,

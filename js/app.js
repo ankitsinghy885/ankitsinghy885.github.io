@@ -350,6 +350,26 @@
         })));
     }
 
+    // a category with its own limit speaks for itself, worst first
+    Calc.categoryBudgets(Store.get(), sum.range.startKey, sum.range.endKey, s.nearBudgetPct)
+      .filter(function (r) { return r.status !== 'good'; })
+      .slice(0, 2)
+      .forEach(function (r) {
+        var name = catName(r);
+        if (r.status === 'over') {
+          out.push(alertHtml('critical', '!', t('alert.catOver.title', { name: name }),
+            t('alert.catOver.body', {
+              over: esc(m(Math.abs(r.left))), budget: esc(mInt(r.budget))
+            })));
+        } else {
+          out.push(alertHtml('serious', '!',
+            t('alert.catNear.title', { name: name, pct: pct(r.pct) }),
+            t('alert.catNear.body', {
+              left: esc(m(r.left)), budget: esc(mInt(r.budget))
+            })));
+        }
+      });
+
     host.innerHTML = out.slice(0, 3).join('');
   }
 
@@ -480,6 +500,7 @@
 
     renderDailyChart(sum);
     renderCategories(sum);
+    renderCategoryBudgets(sum);
     renderRecent(state);
   }
 
@@ -518,6 +539,31 @@
           return '<tr><td>' + esc(dayLabel(d.key)) + '</td><td class="num">' + esc(m(d.total)) + '</td></tr>';
         }).join('') + '</tbody></table>'
       : '<p class="meta">' + esc(t('chart.empty')) + '</p>';
+  }
+
+  /* Only the categories carrying a limit of their own, worst first. The card
+     stays hidden until at least one has one, so nobody who does not use this
+     ever sees an empty panel. */
+  function renderCategoryBudgets(sum) {
+    var s = Store.settings();
+    var card = $('#catBudCard');
+    var rows = Calc.categoryBudgets(Store.get(), sum.range.startKey, sum.range.endKey, s.nearBudgetPct);
+    if (!rows.length) { card.hidden = true; $('#catBudList').innerHTML = ''; return; }
+    card.hidden = false;
+    $('#catBudTag').textContent = tc('count.category', rows.length);
+    $('#catBudList').innerHTML = rows.map(function (r) {
+      var shown = Math.max(0, Math.min(100, r.pct));
+      return '<li class="catbud">' +
+        '<span class="catbud-ico" aria-hidden="true">' + esc(r.icon) + '</span>' +
+        '<span class="catbud-name">' + esc(catName(r)) + '</span>' +
+        '<span class="catbud-figures">' +
+          esc(t('catbud.of', { spent: m(r.spent), budget: mInt(r.budget) })) + '</span>' +
+        '<span class="catbud-pct" data-state="' + r.status + '">' + esc(pct(r.pct)) + '</span>' +
+        '<div class="meter-track catbud-track">' +
+          '<div class="meter-fill" data-state="' + r.status + '" style="width:' + shown + '%"></div>' +
+        '</div>' +
+        '</li>';
+    }).join('');
   }
 
   function renderCategories(sum) {
@@ -741,10 +787,22 @@
     var ls = $('#langSelect');
     if (ls) ls.value = I18n.current();
 
+    var sym = Cur.symbolOf(s.currency);
     $('#catManage').innerHTML = Store.categories().map(function (c) {
-      return '<span class="chip">' + esc(catLabel(c)) +
+      var name = catName(c);
+      return '<li class="catset">' +
+        '<span class="catset-ico" aria-hidden="true">' + esc(c.icon) + '</span>' +
+        '<span class="catset-name">' + esc(name) + '</span>' +
+        '<span class="input-money catset-amt">' +
+          '<span class="input-prefix" aria-hidden="true">' + esc(sym) + '</span>' +
+          '<input type="number" inputmode="decimal" min="0" step="any" placeholder="0"' +
+            ' data-cat-budget="' + esc(c.id) + '"' +
+            ' value="' + (c.budget > 0 ? c.budget : '') + '"' +
+            ' aria-label="' + esc(t('a11y.catBudget', { name: name })) + '">' +
+        '</span>' +
         '<button type="button" class="x" data-del-cat="' + esc(c.id) + '" aria-label="' +
-        esc(t('a11y.deleteCat', { name: catName(c) })) + '">×</button></span>';
+          esc(t('a11y.deleteCat', { name: name })) + '">×</button>' +
+        '</li>';
     }).join('');
 
     $('#storageNote').textContent = Store.storageOk()
@@ -1127,6 +1185,22 @@
       $('#nearPctLabel').textContent = t('set.warnAt', { pct: this.value + '%' });
       Store.setSettings({ nearBudgetPct: parseInt(this.value, 10) });
     });
+    // Category limits are typed straight into the list, so commit on change
+    // rather than on every keystroke - the dashboard re-renders each time.
+    $('#catManage').addEventListener('change', function (ev) {
+      var field = ev.target.closest('[data-cat-budget]');
+      if (!field) return;
+      var raw = field.value.trim();
+      var amount = raw === '' ? 0 : Math.max(0, Number(raw) || 0);
+      Store.setCategoryBudget(field.dataset.catBudget, amount);
+      if (amount > 0) {
+        toast(t('toast.catBudgetSet', {
+          name: catName(Store.category(field.dataset.catBudget)),
+          amount: mInt(amount)
+        }));
+      }
+    });
+
     $('#alertsOn').addEventListener('change', function () {
       Store.setSettings({ alerts: this.checked });
     });

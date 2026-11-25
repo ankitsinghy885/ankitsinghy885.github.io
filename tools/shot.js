@@ -134,7 +134,12 @@ var SEED = `(function () {
       monthlyBudget: 20000, cycleStartDay: 1, limitMode: 'adaptive',
       nearBudgetPct: 80, alerts: true, theme: '${THEME}', onboarded: true
     },
-    categories: cats.map(function (c) { return { id: c[0], name: c[1], icon: c[2] }; }),
+    // a few carry their own limit, so the category-budget card has something
+    // to show: one comfortable, one close to the line, one already past it
+    categories: cats.map(function (c) {
+      var limits = { food: 1800, groceries: 3000, shopping: 800 };
+      return { id: c[0], name: c[1], icon: c[2], budget: limits[c[0]] || 0 };
+    }),
     expenses: rows.map(function (r, i) {
       return {
         id: 'seed' + i, note: r[0], categoryId: r[1], amount: r[2],

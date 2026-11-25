@@ -749,9 +749,10 @@ body.is-locked { overflow: hidden; }
   #view-home > #alerts { grid-column: 1 / -1; grid-row: 3; }
   #view-home > .tiles { grid-column: 1 / -1; grid-row: 4; }
   #view-home > .budget-card { grid-column: 1 / -1; grid-row: 5; }
-  .home-col-a > * { grid-column: 1; grid-row: 6; }
-  .home-col-b > * { grid-column: 2; grid-row: 6; }
-  #view-home > .card:last-child { grid-column: 1 / -1; grid-row: 7; }
+  #view-home > .catbud-card { grid-column: 1 / -1; grid-row: 6; }
+  .home-col-a > * { grid-column: 1; grid-row: 7; }
+  .home-col-b > * { grid-column: 2; grid-row: 7; }
+  #view-home > .card:last-child { grid-column: 1 / -1; grid-row: 8; }
 
   /* five across on a wide screen, the way the row reads in one sweep */
   .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 14px; }
@@ -992,4 +993,59 @@ body.is-locked { overflow: hidden; }
   }
   .cat-donut { width: 184px; margin: 0; }
   .cat-list { gap: 13px; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Category budgets
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* One row per category that carries a limit: who it is, where it stands, and
+   a bar underneath. The figures and the share are always written out, so the
+   bar's colour is never the only thing saying a limit is in trouble. */
+.catbud-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 15px; }
+.catbud {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center; column-gap: 9px; row-gap: 6px;
+}
+.catbud-ico { font-size: 1rem; }
+.catbud-name {
+  font-size: 0.8125rem; font-weight: 550;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.catbud-figures { font-size: 0.75rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.catbud-pct {
+  font-size: 0.75rem; font-weight: 650; font-variant-numeric: tabular-nums;
+  min-width: 3.4em; text-align: right;
+}
+.catbud-pct[data-state="over"] { color: var(--critical-text); }
+.catbud-track { grid-column: 1 / -1; }
+
+/* the editor in Settings: name on the left, its own limit on the right */
+.catset-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.catset {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 122px auto;
+  align-items: center; gap: 10px;
+}
+.catset-ico { font-size: 1.0625rem; }
+.catset-name {
+  font-size: 0.875rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.catset-amt .input-prefix { height: 40px; min-width: 28px; padding: 0 6px; font-size: 0.8125rem; }
+.catset-amt input { height: 40px; font-size: 0.875rem; }
+.catset > .x {
+  flex: none; width: 32px; height: 32px; border-radius: 10px;
+  border: 1px solid var(--hairline); background: var(--surface);
+  color: var(--ink-muted); font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.catset > .x:hover { color: var(--critical-text); border-color: var(--critical); }
+.catset > .x:focus-visible { outline: 2px solid var(--series); outline-offset: 2px; }
+
+@media (max-width: 420px) {
+  /* still one row on a narrow phone - the field and its gaps give up the
+     width instead, so a category never spreads over three lines */
+  .catset { grid-template-columns: auto minmax(0, 1fr) 92px auto; gap: 7px; }
+  .catset-amt .input-prefix { min-width: 22px; padding: 0 4px; }
 }
