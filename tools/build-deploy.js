@@ -29,10 +29,11 @@ const FILES = [
   '.well-known/assetlinks.json',
   // referenced by the manifest, so PWABuilder and the install prompt can read them
   'store/screenshots/01-dashboard.png',
-  'store/screenshots/02-charts.png',
-  'store/screenshots/03-add-expense.png',
-  'store/screenshots/04-history.png',
-  'store/screenshots/05-currencies.png'
+  'store/screenshots/02-category-budgets.png',
+  'store/screenshots/03-charts.png',
+  'store/screenshots/04-add-expense.png',
+  'store/screenshots/05-history.png',
+  'store/screenshots/06-currencies.png'
 ];
 
 function rmrf(dir) {

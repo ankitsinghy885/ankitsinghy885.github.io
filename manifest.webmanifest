@@ -20,10 +20,11 @@
   ],
   "screenshots": [
     { "src": "store/screenshots/01-dashboard.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Today's spending and your daily limit" },
-    { "src": "store/screenshots/02-charts.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Daily spending chart and category split" },
-    { "src": "store/screenshots/03-add-expense.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Adding an expense takes seconds" },
-    { "src": "store/screenshots/04-history.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "History grouped by day" },
-    { "src": "store/screenshots/05-currencies.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Every country's currency" }
+    { "src": "store/screenshots/02-category-budgets.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "A limit for every category, with alerts" },
+    { "src": "store/screenshots/03-charts.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Daily spending chart and category split" },
+    { "src": "store/screenshots/04-add-expense.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Adding an expense takes seconds" },
+    { "src": "store/screenshots/05-history.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "History grouped by day" },
+    { "src": "store/screenshots/06-currencies.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Every country's currency" }
   ],
   "shortcuts": [
     {

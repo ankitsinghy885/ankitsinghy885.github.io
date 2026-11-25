@@ -131,7 +131,7 @@ privacy.html                        privacy policy page (email/naam bharna hai)
 .well-known/assetlinks.json         TWA verification ka template
 store/play-icon-512.png             Play listing ka icon
 store/feature-graphic-1024x500.png  listing ka banner
-store/screenshots/                  6 phone screenshots (1080x1920)
+store/screenshots/                  7 phone screenshots (1080x1920)
 store/feature-graphic.html          banner ka source (badal kar dobara render kar sakte ho)
 ```
 

@@ -179,7 +179,7 @@ common amounts a single tap.
 |---|---|
 | App icon (512×512) | `store/play-icon-512.png` |
 | Feature graphic (1024×500) | `store/feature-graphic-1024x500.png` |
-| Phone screenshots (1080×1920) | `store/screenshots/01…06` — kam se kam 2, zyada se zyada 8 |
+| Phone screenshots (1080×1920) | `store/screenshots/01…07` — kam se kam 2, zyada se zyada 8 |
 | Logo (1024×1024, transparent) | `store/logo-1024.png` — social/website ke liye, Play ke liye zaroori nahi |
 
 ---

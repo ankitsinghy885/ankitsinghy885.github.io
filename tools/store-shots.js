@@ -129,7 +129,9 @@ function seedFor(theme) {
     'monthlyBudget:30000,cycleStartDay:1,' +
     "limitMode:'adaptive',nearBudgetPct:80,alerts:true," +
     "theme:'" + theme + "',onboarded:true}," +
-    'categories:cats.map(function(c){return {id:c[0],name:c[1],icon:c[2]};}),' +
+    // a few carry their own limit: one past it, one close to it, the rest
+    // comfortable, so the category-budget card shows all three states
+    'categories:cats.map(function(c){var lim={shopping:1800,fun:3000,transport:3000,groceries:8000,food:5000};return {id:c[0],name:c[1],icon:c[2],budget:lim[c[0]]||0};}),' +
     'expenses:rows.map(function(r,i){return {id:"s"+i,note:r[0],categoryId:r[1],' +
     'amount:r[2],date:day(r[3]),createdAt:Date.now()-i*60000};})};' +
     "localStorage.setItem('expense-tracker.v1',JSON.stringify(state));" +
@@ -144,14 +146,18 @@ var REVEAL = "document.querySelector('#tileLimitCard').click();";
 var SHOTS = [
   { file: '01-dashboard.png', theme: 'light', act: REVEAL },
   {
-    file: '02-charts.png', theme: 'light',
+    file: '02-category-budgets.png', theme: 'light',
+    act: "document.querySelector('#catBudCard').scrollIntoView({block:'center'});"
+  },
+  {
+    file: '03-charts.png', theme: 'light',
     act: "document.querySelector('[data-range=\"30\"]').click();" +
       "document.querySelector('#chartDaily').closest('.card').scrollIntoView({block:'center'});"
   },
-  { file: '03-add-expense.png', theme: 'light', act: "document.querySelector('#fab').click();" },
-  { file: '04-history.png', theme: 'light', act: "document.querySelector('.tab[data-tab=\"history\"]').click();scrollTo(0,0);" },
-  { file: '05-currencies.png', theme: 'light', act: "document.querySelector('#currencyTopBtn').click();" },
-  { file: '06-dark-mode.png', theme: 'dark', act: REVEAL }
+  { file: '04-add-expense.png', theme: 'light', act: "document.querySelector('#fab').click();" },
+  { file: '05-history.png', theme: 'light', act: "document.querySelector('.tab[data-tab=\"history\"]').click();scrollTo(0,0);" },
+  { file: '06-currencies.png', theme: 'light', act: "document.querySelector('#currencyTopBtn').click();" },
+  { file: '07-dark-mode.png', theme: 'dark', act: REVEAL }
 ];
 
 function run() {
